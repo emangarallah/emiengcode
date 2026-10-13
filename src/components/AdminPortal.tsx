@@ -127,7 +127,10 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   useEffect(() => {
     const handleAdminNavigation = (event: Event) => {
       const target = (event as CustomEvent<string>).detail;
-      if (target === 'contacts') setActiveTab('contacts');
+      const tabs: readonly string[] = ['projects', 'services', 'contacts', 'profile', 'db'];
+      if (tabs.includes(target)) {
+        setActiveTab(target as 'projects' | 'services' | 'contacts' | 'profile' | 'db');
+      }
     };
     window.addEventListener('emicode-admin-navigate', handleAdminNavigation);
     return () => window.removeEventListener('emicode-admin-navigate', handleAdminNavigation);
