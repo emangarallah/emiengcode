@@ -179,9 +179,33 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         body: JSON.stringify({ email: emailInput, password: passwordInput })
       });
 
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || 'فشل تسجيل الدخول');
+      const contentType = (res.headers.get('content-type') || '').toLowerCase();
+      if (!contentType.includes('application/json')) {
+        const responseBody = await res.text().catch(() => '');
+        const isMissingApiRoute =
+          res.status === 404 ||
+          /the page could not be found|the page cannot be found|not found/i.test(responseBody);
+
+        throw new Error(
+          isAr
+            ? (isMissingApiRoute
+                ? 'خدمة تسجيل الدخول غير منشورة بشكل صحيح على الخادم. أعد نشر آخر نسخة من EMICODE وتأكد من إعداد متغيرات Neon وJWT في Vercel.'
+                : `استجابة الخادم غير صالحة لتسجيل الدخول (HTTP ${res.status}). حاول لاحقًا أو راجع سجلات النشر.`)
+            : (isMissingApiRoute
+                ? 'The login API is not deployed correctly. Redeploy the latest EMICODE version and verify the Neon and JWT environment variables in Vercel.'
+                : `The login server returned an unexpected response (HTTP ${res.status}). Try again later or inspect deployment logs.`)
+        );
+      }
+
+      let data: { success?: boolean; error?: string; admin?: any };
+      try {
+        data = await res.json();
+      } catch {
+        throw new Error(isAr ? 'تعذر قراءة رد تسجيل الدخول من الخادم.' : 'Could not read the login response from the server.');
+      }
+
+      if (!res.ok || !data.admin) {
+        throw new Error(data.error || (isAr ? 'فشل تسجيل الدخول.' : 'Login failed.'));
       }
 
       setToken(true);

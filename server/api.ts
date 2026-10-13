@@ -19,6 +19,15 @@ import {
 
 const api = Router();
 
+// Public health endpoint for checking that requests reach the deployed API.
+api.get('/health', (_req: Request, res: Response) => {
+  res.status(200).json({
+    ok: true,
+    service: 'EMICODE API',
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Rate limiters
 const contactLimiter = createRateLimiter(6, 10 * 60 * 1000); // 6 submissions per 10 mins
 const loginLimiter = createRateLimiter(8, 15 * 60 * 1000); // 8 login attempts per 15 mins

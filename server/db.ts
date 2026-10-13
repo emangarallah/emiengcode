@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import pg from 'pg';
+import bcrypt from 'bcryptjs';
 import { AdminUser, ContactRequest, Profile, Project, Service } from './types.ts';
 import { store, TEMPLATE_PROJECTS, VERCEL_SHOWCASE_PROJECTS, SERVICE_TEMPLATE_PROJECTS } from './store.ts';
 
@@ -95,6 +96,51 @@ class DatabaseManager {
     }
   }
 
+  private async ensureEnvironmentAdmin(client: pg.PoolClient) {
+    const rawEmail = process.env.ADMIN_EMAIL;
+    const password = process.env.ADMIN_PASSWORD;
+    const email = rawEmail?.trim().toLowerCase();
+
+    // Environment-based bootstrap is opt-in. Never create a built-in/default account.
+    if (!email && !password) return;
+
+    if (
+      !email ||
+      !password ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
+      email.endsWith('@example.com') ||
+      password.length < 12 ||
+      password.toLowerCase().includes('replace-me')
+    ) {
+      console.warn('[DB] Initial admin bootstrap skipped: set a real ADMIN_EMAIL and a strong ADMIN_PASSWORD (12+ characters).');
+      return;
+    }
+
+    if (typeof process.env.JWT_SECRET !== 'string' || process.env.JWT_SECRET.length < 32) {
+      console.warn('[DB] Initial admin bootstrap skipped: JWT_SECRET must contain at least 32 characters.');
+      return;
+    }
+
+    const existing = await client.query(
+      'SELECT id FROM admins WHERE LOWER(email) = LOWER($1) LIMIT 1',
+      [email]
+    );
+    if (existing.rows.length > 0) return;
+
+    const passwordHash = await bcrypt.hash(password, 12);
+    const inserted = await client.query(
+      `INSERT INTO admins (email, "passwordHash", role)
+       VALUES ($1, $2, 'superadmin')
+       ON CONFLICT (email) DO NOTHING
+       RETURNING id`,
+      [email, passwordHash]
+    );
+
+    if (inserted.rowCount) {
+      console.log('[DB] Created the configured initial superadmin account.');
+    }
+  }
+
   private async ensureNeonSchema(client: pg.PoolClient) {
     try {
       // Create tables if not exists
@@ -168,6 +214,10 @@ class DatabaseManager {
         ALTER TABLE contact_requests ADD COLUMN IF NOT EXISTS "additionalFeatures" TEXT;
         ALTER TABLE contact_requests ADD COLUMN IF NOT EXISTS "referenceProject" VARCHAR(255);
       `);
+
+      // Create a first superadmin only when explicit private environment credentials exist.
+      // Existing accounts are never reset by ordinary application startup.
+      await this.ensureEnvironmentAdmin(client);
 
       // Remove only the small, explicit list of known legacy demo artifacts.
       // Customer requests are never deleted by matching email domains or other heuristics.
