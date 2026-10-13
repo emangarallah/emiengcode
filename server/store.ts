@@ -10,7 +10,9 @@ interface DatabaseData {
   profile: Profile;
 }
 
-const DATA_DIR = path.resolve(process.cwd(), '.data');
+const DATA_DIR = process.env.VERCEL
+  ? path.join('/tmp', 'emiengcode')
+  : path.resolve(process.cwd(), '.data');
 const STORE_PATH = path.join(DATA_DIR, 'store.json');
 
 // Curated functional template projects demonstrating EMICODE development standards
@@ -434,6 +436,10 @@ class ResilientStore {
   }
 
   private saveData(dataToSave: DatabaseData) {
+    // Vercel function filesystems are read-only except for ephemeral /tmp.
+    // Production data must live in Neon; never pretend this fallback is durable.
+    if (process.env.VERCEL) return;
+
     try {
       if (!fs.existsSync(DATA_DIR)) {
         fs.mkdirSync(DATA_DIR, { recursive: true });
