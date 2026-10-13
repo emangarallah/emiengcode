@@ -37,43 +37,61 @@ class DatabaseManager {
     const dbUrl = process.env.DATABASE_URL;
     if (!dbUrl || dbUrl.trim() === '' || dbUrl.includes('MY_DATABASE_URL')) {
       this.isNeonActive = false;
-      this.statusMessage = 'Running on embedded resilient storage. Connect Neon PostgreSQL anytime via DATABASE_URL.';
-      console.log(`[DB] ${this.statusMessage}`);
+      this.statusMessage = 'DATABASE_URL is missing or still contains a placeholder. Configure a valid Neon PostgreSQL connection string.';
+      console.warn('[DB] DATABASE_URL is missing or still contains a placeholder; Neon PostgreSQL is not configured.');
       return;
     }
+
+    let phase: 'connection' | 'schema initialization' = 'connection';
 
     try {
       console.log('[DB] Attempting connection to Neon PostgreSQL...');
       this.pool = new Pool({
         connectionString: dbUrl,
-        ssl: {
-          rejectUnauthorized: false
-        },
+        ssl: { rejectUnauthorized: false },
         max: 10,
         idleTimeoutMillis: 30000,
         connectionTimeoutMillis: 5000
       });
 
       this.pool.on('error', (err) => {
-        console.warn('[DB] Handled idle Neon PostgreSQL client error:', err.message);
+        const safeMessage = String(err?.message ?? err)
+          .replace(/postgres(?:ql)?:\/\/[^\s@]+@[^\s]+/gi, 'postgresql://[redacted]')
+          .replace(/[\r\n]+/g, ' ')
+          .slice(0, 500);
+        console.warn('[DB] Handled idle Neon PostgreSQL client error:', safeMessage);
       });
 
       const client = await this.pool.connect();
       try {
         await client.query('SELECT NOW()');
+        phase = 'schema initialization';
+        await this.ensureNeonSchema(client);
+
         this.isNeonActive = true;
         this.statusMessage = 'Connected successfully to Neon PostgreSQL database.';
-        console.log(`[DB] ${this.statusMessage}`);
-
-        // Ensure schema & seed if fresh
-        await this.ensureNeonSchema(client);
+        console.log('[DB] Neon PostgreSQL connection and schema initialization succeeded.');
       } finally {
         client.release();
       }
     } catch (err: any) {
       this.isNeonActive = false;
-      this.statusMessage = 'Unable to connect to Neon PostgreSQL. Verify the database configuration and network access.';
-      console.warn(`[DB] Neon PostgreSQL initialization fallback: ${this.statusMessage}`);
+      const errorCode = typeof err?.code === 'string' ? err.code : '';
+      const safeMessage = String(err?.message ?? err)
+        .replace(/postgres(?:ql)?:\/\/[^\s@]+@[^\s]+/gi, 'postgresql://[redacted]')
+        .replace(/[\r\n]+/g, ' ')
+        .slice(0, 500);
+
+      this.statusMessage = `Neon PostgreSQL ${phase} failed. Verify DATABASE_URL, database credentials, network access, and schema permissions.`;
+      console.error(
+        `[DB] Neon PostgreSQL ${phase} failed${errorCode ? ` (code ${errorCode})` : ''}: ${safeMessage}`
+      );
+
+      const failedPool = this.pool;
+      this.pool = null;
+      if (failedPool) {
+        await failedPool.end().catch(() => undefined);
+      }
     }
   }
 
