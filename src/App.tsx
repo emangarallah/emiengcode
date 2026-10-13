@@ -12,7 +12,6 @@ import { ProjectDetailModal } from './components/ProjectDetailModal.tsx';
 import { AdminPortal } from './components/AdminPortal.tsx';
 import { Footer } from './components/Footer.tsx';
 import { ThemeToggle } from './components/ThemeToggle.tsx';
-import { NotificationCenter } from './components/NotificationCenter.tsx';
 
 export default function App() {
   const [lang, setLang] = useState<Language>('ar');
@@ -263,7 +262,6 @@ export default function App() {
         />
       )}
 
-      <NotificationCenter mode="client" lang={lang} />
     </div>
   );
 }
