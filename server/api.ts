@@ -412,6 +412,7 @@ api.post('/admin/change-password', requireAdmin, async (req: Request, res: Respo
 
     res.json({ success: true, message: 'تم تحديث كلمة المرور بنجاح في قاعدة البيانات' });
   } catch (err: any) {
+    void notifySystemFailure('admin-password-change-failure', 'فشلت عملية تغيير كلمة مرور إدارية. يرجى مراجعة سجلات الخادم.').catch(() => undefined);
     res.status(500).json({ error: 'خطأ أثناء تغيير كلمة المرور', details: err.message });
   }
 });
@@ -621,6 +622,7 @@ api.post('/admin/services', requireAdmin, async (req: Request, res: Response) =>
     });
     res.status(201).json(created);
   } catch (err: any) {
+    void notifySystemFailure('admin-service-create-failure', 'فشلت عملية إضافة خدمة من لوحة الإدارة. يرجى مراجعة سجلات الخادم.').catch(() => undefined);
     res.status(500).json({ error: 'تعذر إضافة الخدمة', details: err.message });
   }
 });
@@ -648,6 +650,7 @@ api.put('/admin/services/:id', requireAdmin, async (req: Request, res: Response)
     });
     res.json(updated);
   } catch (err: any) {
+    void notifySystemFailure('admin-service-update-failure', 'فشلت عملية تحديث خدمة من لوحة الإدارة. يرجى مراجعة سجلات الخادم.').catch(() => undefined);
     res.status(500).json({ error: 'تعذر تعديل الخدمة', details: err.message });
   }
 });
@@ -668,6 +671,7 @@ api.delete('/admin/services/:id', requireAdmin, async (req: Request, res: Respon
     });
     res.json({ success: true, message: 'تم حذف الخدمة بنجاح' });
   } catch (err: any) {
+    void notifySystemFailure('admin-service-delete-failure', 'فشلت عملية حذف خدمة من لوحة الإدارة. يرجى مراجعة سجلات الخادم.').catch(() => undefined);
     res.status(500).json({ error: 'تعذر حذف الخدمة', details: err.message });
   }
 });
@@ -719,6 +723,7 @@ api.delete('/admin/contacts/:id', requireAdmin, async (req: Request, res: Respon
     });
     res.json({ success: true, message: 'تم حذف طلب التواصل' });
   } catch (err: any) {
+    void notifySystemFailure('admin-contact-delete-failure', 'فشلت عملية حذف طلب عميل من لوحة الإدارة. يرجى مراجعة سجلات الخادم.').catch(() => undefined);
     res.status(500).json({ error: 'تعذر حذف طلب التواصل', details: err.message });
   }
 });
@@ -745,6 +750,7 @@ api.put('/admin/profile', requireAdmin, async (req: Request, res: Response) => {
     });
     res.json(updated);
   } catch (err: any) {
+    void notifySystemFailure('admin-profile-update-failure', 'فشلت عملية تحديث الملف التعريفي للموقع. يرجى مراجعة سجلات الخادم.').catch(() => undefined);
     res.status(500).json({ error: 'تعذر تحديث الملف الشخصي', details: err.message });
   }
 });
