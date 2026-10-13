@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { db } from './db.ts';
+import { store } from './store.ts';
 import { bcrypt, clearAuthCookie, createRateLimiter, requireAdmin, setAuthCookie, signAdminToken } from './auth.ts';
 import {
   createContactRequestWithNotifications,
@@ -93,43 +94,75 @@ api.get('/db-status', requireAdmin, async (_req: Request, res: Response) => {
 // Get Projects
 api.get('/projects', async (req: Request, res: Response) => {
   try {
-    if (!(await db.waitUntilInitialized())) return res.status(503).json({ error: 'معرض الأعمال غير متاح مؤقتًا حتى يتوفر اتصال قاعدة البيانات.' });
     const { search, category, status } = req.query;
-    const projects = await db.getProjects({
+    const filters = {
       search: typeof search === 'string' ? search : undefined,
       category: typeof category === 'string' ? category : undefined,
       status: typeof status === 'string' ? status : undefined
-    });
-    res.json(projects);
+    };
+
+    if (await db.waitUntilInitialized()) {
+      return res.json(await db.getProjects(filters));
+    }
+
+    // Read-only catalog fallback lets public portfolio pages show curated projects
+    // while Neon is unavailable. Write operations remain disabled until DB is healthy.
+    let projects = store.getProjects();
+    if (filters.category && filters.category !== 'all') {
+      projects = projects.filter((project) => project.category === filters.category);
+    }
+    if (filters.status && filters.status !== 'all') {
+      projects = projects.filter((project) => project.status === filters.status);
+    }
+    if (filters.search) {
+      const query = filters.search.toLocaleLowerCase();
+      projects = projects.filter((project) =>
+        [project.title, project.shortDescription, project.description, project.category, ...(project.technologies ?? [])]
+          .some((value) => String(value ?? '').toLocaleLowerCase().includes(query))
+      );
+    }
+
+    res.setHeader('X-EMICODE-Catalog-Source', 'read-only-fallback');
+    return res.json(projects);
   } catch (err: any) {
-    res.status(500).json({ error: 'تعذر جلب المشاريع', details: err.message });
+    console.error('[API] Project catalog read failed:', err?.message ?? err);
+    return res.status(500).json({ error: 'تعذر جلب المشاريع' });
   }
 });
 
 // Get Single Project by Slug
 api.get('/projects/:slug', async (req: Request, res: Response) => {
   try {
-    if (!(await db.waitUntilInitialized())) {
-      return res.status(503).json({ error: 'تفاصيل المشروع غير متاحة مؤقتًا حتى يتوفر اتصال قاعدة البيانات.' });
-    }
-    const project = await db.getProjectBySlug(req.params.slug);
+    const project = await db.waitUntilInitialized()
+      ? await db.getProjectBySlug(req.params.slug)
+      : store.getProjectBySlug(req.params.slug);
+
     if (!project) {
       return res.status(404).json({ error: 'المشروع غير موجود' });
     }
-    res.json(project);
+    if (!(await db.isNeonConnected())) {
+      res.setHeader('X-EMICODE-Catalog-Source', 'read-only-fallback');
+    }
+    return res.json(project);
   } catch (err: any) {
-    res.status(500).json({ error: 'تعذر جلب بيانات المشروع', details: err.message });
+    console.error('[API] Project detail read failed:', err?.message ?? err);
+    return res.status(500).json({ error: 'تعذر جلب بيانات المشروع' });
   }
 });
 
 // Get Services (Public: active only)
 api.get('/services', async (_req: Request, res: Response) => {
   try {
-    if (!(await db.waitUntilInitialized())) return res.status(503).json({ error: 'الخدمات غير متاحة مؤقتًا حتى يتوفر اتصال قاعدة البيانات.' });
-    const services = await db.getServices(true);
-    res.json(services);
+    if (await db.waitUntilInitialized()) {
+      return res.json(await db.getServices(true));
+    }
+
+    // Public service list is static seed content; admin writes still require Neon.
+    res.setHeader('X-EMICODE-Catalog-Source', 'read-only-fallback');
+    return res.json(store.getServices(true));
   } catch (err: any) {
-    res.status(500).json({ error: 'تعذر جلب الخدمات', details: err.message });
+    console.error('[API] Services read failed:', err?.message ?? err);
+    return res.status(500).json({ error: 'تعذر جلب الخدمات' });
   }
 });
 
