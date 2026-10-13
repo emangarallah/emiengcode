@@ -200,7 +200,7 @@ api.post('/client/notifications', notificationLimiter, async (req: Request, res:
   const tokens = readClientTokens(req.body);
   if (!tokens) return res.status(401).json({ error: 'رمز متابعة الطلب غير صالح.' });
   try {
-    const result = await listClientNotifications(tokens);
+    const result = await listClientNotifications(tokens, req.body?.includeRead === true);
     if (!result) return res.status(404).json({ error: 'لم يتم العثور على إشعارات لهذا الرمز.' });
     res.json(result);
   } catch {
@@ -400,7 +400,7 @@ api.get('/admin/stats', requireAdmin, async (_req: Request, res: Response) => {
 api.get('/admin/notifications', requireAdmin, async (req: Request, res: Response) => {
   try {
     const role = req.admin?.role === 'superadmin' ? 'superadmin' : 'admin';
-    res.json(await listAdminNotifications(role));
+    res.json(await listAdminNotifications(role, req.query.history === 'true'));
   } catch {
     res.status(503).json({ error: 'تعذر تحميل إشعارات الإدارة مؤقتًا.' });
   }
@@ -576,8 +576,12 @@ api.patch('/admin/contacts/:id', requireAdmin, async (req: Request, res: Respons
       return res.status(404).json({ error: 'طلب التواصل غير موجود' });
     }
     res.json(updated);
-  } catch (err: any) {
-    res.status(500).json({ error: 'تعذر تحديث حالة الطلب', details: err.message });
+  } catch {
+    void notifySystemFailure(
+      'contact-status-update-failure',
+      'فشلت عملية تحديث حالة طلب من لوحة الإدارة. يرجى مراجعة سجلات الخادم.'
+    ).catch(() => undefined);
+    res.status(500).json({ error: 'تعذر تحديث حالة الطلب. يرجى المحاولة لاحقًا.' });
   }
 });
 
