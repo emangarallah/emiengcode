@@ -88,7 +88,10 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
       }
 
       if (typeof data.trackingToken === 'string' && /^[a-f0-9]{64}$/i.test(data.trackingToken)) {
-        let previousTokens: string[] = [];
+        // The request and notifications are already committed on the server. Browser storage
+        // restrictions must not turn a successful submission into a reported failure.
+        try {
+          let previousTokens: string[] = [];
         try {
           const saved = JSON.parse(localStorage.getItem('emicode_client_notification_tokens') || '[]');
           if (Array.isArray(saved)) previousTokens = saved.filter((token): token is string => typeof token === 'string' && /^[a-f0-9]{64}$/i.test(token));
@@ -101,7 +104,10 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
         localStorage.setItem('emicode_client_notification_tokens', JSON.stringify([...new Set(tokens)].slice(0, 20)));
         // Keep the last-token key for older cached frontend builds.
         localStorage.setItem('emicode_client_notification_token', data.trackingToken);
-        window.dispatchEvent(new Event('emicode-client-token-updated'));
+          window.dispatchEvent(new Event('emicode-client-token-updated'));
+        } catch {
+          // Submission succeeded in Neon, but this browser cannot persist the tracking token.
+        }
       }
       setSuccess(true);
       setName('');
