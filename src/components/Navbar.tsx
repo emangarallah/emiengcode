@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { Language, translations } from '../i18n.ts';
 import { ThemeToggle } from './ThemeToggle.tsx';
+import { NotificationCenter } from './NotificationCenter.tsx';
 
 interface NavbarProps {
   lang: Language;
@@ -116,6 +117,8 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span>{lang === 'ar' ? 'EN' : 'عربي'}</span>
           </button>
 
+          <NotificationCenter mode="client" lang={lang} placement="inline" />
+
           {/* Always-visible admin entry; server-side APIs still enforce authentication. */}
           <button
             onClick={onOpenAdmin}
@@ -154,6 +157,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             {lang === 'ar' ? 'EN' : 'عربي'}
           </button>
+
+          <NotificationCenter mode="client" lang={lang} placement="inline" />
 
           {/* Hamburger Menu */}
           <button
