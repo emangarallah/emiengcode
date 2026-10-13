@@ -51,9 +51,10 @@ const requestStatusLabels: Record<string, { ar: string; en: string }> = {
 interface NotificationCenterProps {
   mode: Mode;
   lang: Language;
+  placement?: 'floating' | 'inline';
 }
 
-export const NotificationCenter: React.FC<NotificationCenterProps> = ({ mode, lang }) => {
+export const NotificationCenter: React.FC<NotificationCenterProps> = ({ mode, lang, placement = 'floating' }) => {
   const isAr = lang === 'ar';
   const [trackingTokens, setTrackingTokens] = useState<string[]>(() => (
     mode === 'client' ? readClientTrackingTokens() : []
@@ -259,8 +260,8 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ mode, la
     ? (isAr ? 'إشعارات الإدارة والمبرمج' : 'Admin & developer notifications')
     : (isAr ? 'إشعارات طلبك' : 'Your request notifications');
 
-  const wrapperClass = mode === 'client'
-    ? 'fixed bottom-6 end-6 z-40'
+  const wrapperClass = mode === 'client' && placement === 'floating'
+    ? 'fixed bottom-6 end-6 z-50'
     : 'relative shrink-0';
 
   return (
@@ -273,9 +274,10 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ mode, la
         }}
         aria-label={title}
         aria-expanded={isOpen}
-        className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-slate-300 bg-white text-slate-700 shadow-lg transition hover:border-cyan-400 hover:text-cyan-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:text-cyan-300"
+        className={`relative flex h-10 items-center justify-center rounded-xl border border-slate-300 bg-white text-slate-700 shadow-lg transition hover:border-cyan-400 hover:text-cyan-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:text-cyan-300 ${placement === 'inline' ? 'w-auto gap-2 px-3' : 'w-10'}`}
       >
-        <Bell className="h-5 w-5" />
+        <Bell className="h-5 w-5 shrink-0" />
+        {placement === 'inline' && <span className="text-xs font-semibold">{isAr ? 'الإشعارات' : 'Notifications'}</span>}
         {unreadCount > 0 && (
           <span className="absolute -right-1 -top-1 min-w-5 rounded-full bg-rose-500 px-1 text-center text-[10px] font-black leading-5 text-white">
             {unreadCount > 99 ? '99+' : unreadCount}
