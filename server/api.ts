@@ -169,11 +169,17 @@ api.get('/services', async (_req: Request, res: Response) => {
 // Get Profile
 api.get('/profile', async (_req: Request, res: Response) => {
   try {
-    if (!(await db.waitUntilInitialized())) return res.status(503).json({ error: 'الملف التعريفي غير متاح مؤقتًا حتى يتوفر اتصال قاعدة البيانات.' });
-    const profile = await db.getProfile();
-    res.json(profile);
+    if (await db.waitUntilInitialized()) {
+      return res.json(await db.getProfile());
+    }
+
+    // Return the non-sensitive seeded public profile when Neon is unavailable.
+    // Profile edits still require the primary database and are never reported saved here.
+    res.setHeader('X-EMICODE-Catalog-Source', 'read-only-fallback');
+    return res.json(store.getSeedData().profile);
   } catch (err: any) {
-    res.status(500).json({ error: 'تعذر جلب الملف التعريفي', details: err.message });
+    console.error('[API] Profile read failed:', err?.message ?? err);
+    return res.status(500).json({ error: 'تعذر جلب الملف التعريفي' });
   }
 });
 
