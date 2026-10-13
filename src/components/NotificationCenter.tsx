@@ -286,13 +286,13 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ mode, la
       </button>
 
       {toast && (
-        <div role="status" className={`absolute ${mode === 'client' ? 'bottom-14 end-0' : 'top-12 end-0'} z-[80] w-[min(80vw,320px)] rounded-xl border border-cyan-700/60 bg-slate-900 px-4 py-3 text-xs font-semibold text-white shadow-xl`}>
+        <div role="status" className={`absolute ${mode === 'client' && placement === 'floating' ? 'bottom-14 end-0' : 'top-12 end-0'} z-[80] w-[min(80vw,320px)] rounded-xl border border-cyan-700/60 bg-slate-900 px-4 py-3 text-xs font-semibold text-white shadow-xl`}>
           {isAr ? `إشعار جديد: ${toast}` : `New notification: ${toast}`}
         </div>
       )}
 
       {isOpen && (
-        <div className={`absolute ${mode === 'client' ? 'bottom-12 end-0' : 'top-12 end-0'} z-[70] flex max-h-[min(70vh,520px)] w-[min(90vw,380px)] flex-col overflow-hidden rounded-2xl border border-slate-700 bg-slate-950 text-white shadow-2xl`}>
+        <div className={`absolute ${mode === 'client' && placement === 'floating' ? 'bottom-12 end-0' : 'top-12 end-0'} z-[70] flex max-h-[min(70vh,520px)] w-[min(90vw,380px)] flex-col overflow-hidden rounded-2xl border border-slate-700 bg-slate-950 text-white shadow-2xl`}>
           <div className="flex items-center justify-between gap-3 border-b border-slate-800 px-4 py-3">
             <div>
               <p className="text-sm font-bold">{title}</p>
