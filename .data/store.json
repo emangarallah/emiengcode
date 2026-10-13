@@ -1,0 +1,224 @@
+{
+  "projects": [
+    {
+      "id": "10000000-0000-0000-0000-000000000001",
+      "title": "نموذج موقع عيادة أسنان وحجز مواعيد",
+      "slug": "demo-dental-clinic",
+      "shortDescription": "مثال توضيحي متكامل لموقع عيادة طبية وجراحة أسنان يشمل استعراض الخدمات، جدول الأطباء، ونظام حجز مواعيد مرن.",
+      "description": "نموذج تجريبي ومثال توضيحي يبرز معايير تصميم وتطوير المواقع الطبية ومراكز طب الأسنان المتخصصة.\n\nأبرز الميزات والوظائف المعروضة في النموذج:\n- استعراض العيادات التخصصية (طب الأسنان التجميلي، التقويم، زراعة الأسنان، وطب أسنان الأطفال).\n- واجهة حجز مواعيد ذكية تتيح للزائر تحديد الطبيب المعالج واليوم والوقت المتاح بدقة.\n- استعراض الكوادر الطبية والمؤهلات العلمية وسنوات الخبرة لكل طبيب.\n- جدول زمني تفاعلي لتسهيل إدارة أوقات الاستشارات الطبية وتقليل فترات الانتظار.\n- استعراض أسعار الخدمات والعروض وإرشادات ما بعد العلاج.\n- تصميم متجاوب فائق السرعة يعمل بسلاسة تامة على الهواتف الذكية والأجهزة اللوحية.\n\nملاحظة: هذا العمل نموذج تجريبي استرشادي يوضح جودة الواجهات وهندسة الحجز، ويمكن تخصيصه وربطه بقواعد بياناتك ونظام عيادتك الفعلي.",
+      "category": "web",
+      "technologies": [
+        "React",
+        "TypeScript",
+        "Tailwind CSS",
+        "Calendar Booking",
+        "REST APIs",
+        "Node.js"
+      ],
+      "coverImage": "https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=1200&q=80",
+      "gallery": [
+        "https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=1200&q=80"
+      ],
+      "liveUrl": null,
+      "githubUrl": null,
+      "status": "prototype",
+      "isTemplate": true,
+      "featured": true,
+      "sortOrder": 1,
+      "createdAt": "2026-03-01T10:00:00.000Z",
+      "updatedAt": "2026-03-01T10:00:00.000Z"
+    },
+    {
+      "id": "10000000-0000-0000-0000-000000000002",
+      "title": "نموذج موقع قاعة مناسبات ومؤتمرات",
+      "slug": "demo-event-hall",
+      "shortDescription": "مثال توضيحي لموقع تسويقي لقاعات الأفراح والمؤتمرات يبرز معارض الصور التفاعلية، باقات الخدمات، ونظام الاستعلام عن التواريخ.",
+      "description": "نموذج تجريبي ومثال توضيحي يوضح حلول التجربة الرقمية لقطاع الضيافة وقاعات المناسبات ومراكز الفعاليات الكبرى.\n\nأبرز الميزات والوظائف المعروضة في النموذج:\n- معرض صور بانورامي عالي الدقة يستعرض تجهيزات القاعة الكبرى، أجنحة كبار الشخصيات، والديكورات المتنوعة.\n- تفاصيل باقات المناسبات (حفلات الزفاف، المؤتمرات، المعارض، الاجتماعات الرسمية) مع خيارات التخصيص.\n- نظام تقويم تفاعلي للاستعلام الأولي عن التواريخ والأيام المتاحة قبل التواصل.\n- نموذج طلب معاينة ميدانية وحجز مسبق مع ربط مباشر بقنوات التواصل السريع واتساب.\n- أقسام مخصصة لخدمات الضيافة والتجهيزات الصوتية والمرئية والإضاءة الذكية.\n- سرعة تحميل محسنة مع تأثيرات بصرية جذابة تبرز فخامة القاعة على كافة الشاشات.\n\nملاحظة: هذا العمل نموذج تجريبي استرشادي يوضح جودة العرض البصري وتجربة المستخدم، ويمكن تنفيذه وتكييفه بالكامل لأي قاعة أو مركز فعاليات.",
+      "category": "web",
+      "technologies": [
+        "React",
+        "TypeScript",
+        "Tailwind CSS",
+        "Interactive Gallery",
+        "Booking Engine",
+        "Vite"
+      ],
+      "coverImage": "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=1200&q=80",
+      "gallery": [
+        "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=1200&q=80"
+      ],
+      "liveUrl": null,
+      "githubUrl": null,
+      "status": "prototype",
+      "isTemplate": true,
+      "featured": true,
+      "sortOrder": 2,
+      "createdAt": "2026-03-02T10:00:00.000Z",
+      "updatedAt": "2026-03-02T10:00:00.000Z"
+    },
+    {
+      "id": "10000000-0000-0000-0000-000000000003",
+      "title": "نموذج موقع تجاري لمعارض السيارات",
+      "slug": "demo-car-dealership",
+      "shortDescription": "مثال توضيحي لمنصة استعراض وتجارة سيارات مع محرك تصفية متقدم بالموديل والميزانية، ومواصفات فنية وقنوات تواصل سريعة.",
+      "description": "نموذج تجريبي ومثال توضيحي يجسد معمارية منصات تجارة وعرض السيارات للوكالات والمعارض والموزعين المعتمدين.\n\nأبرز الميزات والوظائف المعروضة في النموذج:\n- محرك تصفية وبحث لحظي متقدم حسب الشركة المصنعة، سنة الصنع، الفئة، ناقل الحركة، ونطاق السعر.\n- بطاقات سيارات تفاعلية توضح المواصفات الفنية الكاملة، المسافة المقطوعة، وسجل الفحص الفني.\n- حاسبة تمويل وتقسيط مالي تقديرية تسهل للعميل مقارنة خطط الدفع المتاحة.\n- زر حجز موعد لتجربة القيادة (Test Drive) أو التواصل الفوري مع قسم المبيعات عبر واتساب.\n- ميزة مقارنة المواصفات بين سيارتين لمساعدة المشتري في اتخاذ القرار.\n- معمارية مهيأة للربط مع قواعد بيانات المخزون المركزي وسجلات المركبات.\n\nملاحظة: هذا العمل نموذج تجريبي استرشادي يعكس مرونة التصفية وهندسة البيانات، ويمكن ربطه بأنظمة إدارة المعارض (DMS) الخاصة بك.",
+      "category": "enterprise",
+      "technologies": [
+        "React",
+        "TypeScript",
+        "Tailwind CSS",
+        "Filters Engine",
+        "PostgreSQL Ready",
+        "Node.js"
+      ],
+      "coverImage": "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80",
+      "gallery": [
+        "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=1200&q=80"
+      ],
+      "liveUrl": null,
+      "githubUrl": null,
+      "status": "prototype",
+      "isTemplate": true,
+      "featured": true,
+      "sortOrder": 3,
+      "createdAt": "2026-03-03T10:00:00.000Z",
+      "updatedAt": "2026-03-03T10:00:00.000Z"
+    },
+    {
+      "id": "10000000-0000-0000-0000-000000000004",
+      "title": "نموذج تطبيق مهام وإنتاجية Flutter",
+      "slug": "demo-flutter-task-app",
+      "shortDescription": "مثال توضيحي لتطبيق جوال لإدارة المهام اليومية والمشاريع بواجهات عصرية وتخزين محلي لنظامي iOS وAndroid.",
+      "description": "نموذج تجريبي ومثال توضيحي يبرز إمكانيات تطوير تطبيقات الهواتف الذكية العابرة للمنصات عبر إطار عمل Flutter وDart.\n\nأبرز الميزات والوظائف المعروضة في النموذج:\n- واجهات مستخدم متقنة مع حركات سلسة ودعم كامل للوضع الداكن (Dark Mode) والوضع الفاتح.\n- تصنيف المهام حسب الأولوية، المشاريع، والوسوم، مع دعم السحب لتحديث الحالة (Drag & Drop).\n- بنية تخزين محلي آمن تعمل بدون اتصال بالإنترنت (Offline-First) مع مزامنة سحابية عند التوفر.\n- لوحة إحصائيات بصرية تتابع مؤشرات الإنجاز الأسبوعي واليومي للتركيز على الإنتاجية.\n- تنبيهات محلية وإشعارات مجدولة للمهام العاجلة والمواعيد النهائية.\n- كود نظيف مبني وفق Clean Architecture وBLoC/Provider لسهولة التوسع والصيانة.\n\nملاحظة: هذا العمل نموذج تجريبي استرشادي يوضح دقة تصميم التطبيقات المتنقلة وأداءها العالي، ويمكن تحويله لتطبيق متكامل يلبي نشاطك.",
+      "category": "mobile",
+      "technologies": [
+        "Flutter",
+        "Dart",
+        "Clean Architecture",
+        "Local Storage",
+        "State Management",
+        "Cross-Platform"
+      ],
+      "coverImage": "https://images.unsplash.com/photo-1551650975-87deedd944c3?auto=format&fit=crop&w=1200&q=80",
+      "gallery": [
+        "https://images.unsplash.com/photo-1551650975-87deedd944c3?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1555774698-0b77e0d5fac6?auto=format&fit=crop&w=1200&q=80"
+      ],
+      "liveUrl": null,
+      "githubUrl": null,
+      "status": "prototype",
+      "isTemplate": true,
+      "featured": true,
+      "sortOrder": 4,
+      "createdAt": "2026-03-04T10:00:00.000Z",
+      "updatedAt": "2026-03-04T10:00:00.000Z"
+    }
+  ],
+  "admins": [
+    {
+      "id": "00000000-0000-0000-0000-000000000001",
+      "email": "emanjarallah646@gmail.com",
+      "passwordHash": "$2b$10$Tz6eQ8a15RvUk7BrVLIVzudFiRfDR5CHTUPPRT/ZE.HphS/JJLadi",
+      "role": "superadmin",
+      "createdAt": "2026-10-13T06:45:45.201Z"
+    }
+  ],
+  "services": [
+    {
+      "id": "2b829e92-36fb-48a5-8be5-6132fb7a0001",
+      "title": "مواقع الشركات والأنشطة التجارية",
+      "description": "تصميم وبرمجة مواقع احترافية سريعة ومتجاوبة تعكس هوية شركتك وتجذب العملاء، مهيأة بالكامل لمحركات البحث (SEO).",
+      "icon": "Globe",
+      "isActive": true,
+      "sortOrder": 1
+    },
+    {
+      "id": "2b829e92-36fb-48a5-8be5-6132fb7a0002",
+      "title": "أنظمة حجز المواعيد والخدمات",
+      "description": "بناء منصات حجز تفاعلية للعيادات، المكاتب الاستشارية، ومراكز التدريب مع تكامل التقويمات وبوابات الدفع الإلكتروني.",
+      "icon": "Calendar",
+      "isActive": true,
+      "sortOrder": 2
+    },
+    {
+      "id": "2b829e92-36fb-48a5-8be5-6132fb7a0003",
+      "title": "لوحات التحكم الإدارية وأنظمة SaaS",
+      "description": "تطوير Dashboard حديثة وقوية لإدارة البيانات، المبيعات، صلاحيات المستخدمين، والتقارير الرسومية التحليلية المعقدة.",
+      "icon": "LayoutDashboard",
+      "isActive": true,
+      "sortOrder": 3
+    },
+    {
+      "id": "2b829e92-36fb-48a5-8be5-6132fb7a0004",
+      "title": "تطبيقات الهاتف عبر Flutter",
+      "description": "برمجة تطبيقات هاتف ذكي أصلية لنظامي iOS وAndroid بكود موحد وسرعة فائقة وأحدث معايير تجربة المستخدم.",
+      "icon": "Smartphone",
+      "isActive": true,
+      "sortOrder": 4
+    },
+    {
+      "id": "2b829e92-36fb-48a5-8be5-6132fb7a0005",
+      "title": "تطبيقات React وSingle Page Apps",
+      "description": "هندسة واجهات أمامية تفاعلية فائقة السرعة باستخدام React وTypeScript مع أفضل ممارسات State Management والأداء.",
+      "icon": "Code2",
+      "isActive": true,
+      "sortOrder": 5
+    },
+    {
+      "id": "2b829e92-36fb-48a5-8be5-6132fb7a0006",
+      "title": "قواعد البيانات وربط الأنظمة APIs",
+      "description": "تصميم وتأمين قواعد بيانات PostgreSQL وNeon، وبناء RESTful APIs وWebhooks لربط الأنظمة الخارجية والمصرفية بسلاسة.",
+      "icon": "Database",
+      "isActive": true,
+      "sortOrder": 6
+    },
+    {
+      "id": "2b829e92-36fb-48a5-8be5-6132fb7a0007",
+      "title": "النشر السحابي، DevOps والصيانة",
+      "description": "نشر المشاريع على Vercel، Cloud Run وDocker، إعداد خطوط CI/CD التلقائية، وتقديم خطط مراقبة وصيانة مستمرة للأمان.",
+      "icon": "CloudUpload",
+      "isActive": true,
+      "sortOrder": 7
+    }
+  ],
+  "contact_requests": [
+    {
+      "name": "سالم الكندي",
+      "email": "salem@alkindi.com",
+      "serviceType": "مواقع الشركات والأنشطة التجارية",
+      "budget": ",500",
+      "message": "طلب استشارة لتطوير منصة رقمية متكاملة.",
+      "id": "76724b91-f844-43ac-a932-1a42c77d751e",
+      "status": "new",
+      "createdAt": "2026-10-13T08:36:13.747Z"
+    },
+    {
+      "name": "أحمد التميمي",
+      "email": "ahmed@tamimi.com",
+      "serviceType": "لوحات التحكم الإدارية وأنظمة SaaS",
+      "budget": "$4,000",
+      "message": "نحتاج بناء منصة سحابية لإدارة عقود الصيانة الدورية مع لوحة مؤشرات حية.",
+      "id": "0b00c815-1833-43e2-b500-c0f0b2642f86",
+      "status": "new",
+      "createdAt": "2026-10-13T06:45:57.895Z"
+    }
+  ],
+  "profile": {
+    "id": "3c929e92-36fb-48a5-8be5-6132fb7a0001",
+    "displayName": "م. عماد الدين (EMICODE)",
+    "headline": "مهندس برمجيات Full-Stack ومطور حلول مؤسسية متقدمة",
+    "bio": "مطور برمجيات ذو خبرة تفوق 6 سنوات في تحويل المتطلبات المعقدة إلى منتجات برمجية متكاملة وسريعة وقابلة للنمو. متخصص في بناء تطبيقات React الحديثة، واجهات برمجة Node.js المتقدمة، حلول قواعد بيانات PostgreSQL/Neon، وتطبيقات Flutter المتنقلة.",
+    "email": "emanjarallah646@gmail.com",
+    "whatsapp": "967713551930",
+    "githubUrl": "https://github.com/emicode-org",
+    "linkedinUrl": "https://linkedin.com/in/emicode-dev",
+    "resumeUrl": "#"
+  }
+}

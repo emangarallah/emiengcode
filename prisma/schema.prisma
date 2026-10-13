@@ -1,0 +1,119 @@
+// Prisma Schema for EMICODE Portfolio & Management System
+// Configured for Neon PostgreSQL with pooling & direct connection support
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Project {
+  id               String   @id @default(uuid()) @db.Uuid
+  title            String
+  slug             String   @unique
+  shortDescription String
+  description      String   @db.Text
+  category         String   // e.g. web, saas, mobile, api, enterprise
+  technologies     String[] // PostgreSQL native string array
+  coverImage       String
+  gallery          String[] @default([])
+  liveUrl          String?
+  githubUrl        String?
+  status           String   @default("completed") // completed, prototype, in_development
+  featured         Boolean  @default(false)
+  sortOrder        Int      @default(0)
+  isTemplate       Boolean  @default(true)
+  serviceId        String?  @db.Uuid
+  service          Service? @relation(fields: [serviceId], references: [id])
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("projects")
+}
+
+model Admin {
+  id           String   @id @default(uuid()) @db.Uuid
+  email        String   @unique
+  passwordHash String
+  role         String   @default("admin") // admin, superadmin
+  createdAt    DateTime @default(now())
+
+  @@map("admins")
+}
+
+model Service {
+  id          String    @id @default(uuid()) @db.Uuid
+  title       String
+  description String    @db.Text
+  icon        String    // Lucide icon identifier e.g. "Layout", "Server", "Smartphone"
+  isActive    Boolean   @default(true)
+  sortOrder   Int       @default(0)
+  projects    Project[]
+
+  @@map("services")
+}
+
+model ContactRequest {
+  id                 String   @id @default(uuid()) @db.Uuid
+  name               String
+  email              String
+  phone              String?
+  serviceType        String
+  serviceId          String?  @db.Uuid
+  budget             String?
+  timeline           String?
+  additionalFeatures String?  @db.Text
+  referenceProject   String?
+  message            String   @db.Text
+  status             String   @default("new") // new, in_review, contacted, completed, archived
+  createdAt          DateTime @default(now())
+  notificationAccess ClientRequestAccess?
+
+  @@map("contact_requests")
+}
+
+model Profile {
+  id          String  @id @default(uuid()) @db.Uuid
+  displayName String
+  headline    String
+  bio         String  @db.Text
+  email       String
+  whatsapp    String
+  githubUrl   String?
+  linkedinUrl String?
+  resumeUrl   String?
+
+  @@map("profile")
+}
+
+
+model Notification {
+  id            String    @id @default(uuid()) @db.Uuid
+  recipientRole String    @map("recipient_role") @db.VarChar(32)
+  recipientKey  String?   @map("recipient_key") @db.VarChar(128)
+  title         String    @db.VarChar(200)
+  message       String    @db.Text
+  type          String    @default("info") @db.VarChar(64)
+  entityType    String?   @map("entity_type") @db.VarChar(64)
+  entityId      String?   @map("entity_id") @db.VarChar(128)
+  targetUrl     String?   @map("target_url") @db.Text
+  readAt        DateTime? @map("read_at") @db.Timestamptz(6)
+  dedupeKey     String?   @unique @map("dedupe_key") @db.VarChar(255)
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([recipientRole, recipientKey, createdAt])
+  @@index([recipientRole, recipientKey, readAt])
+  @@map("notifications")
+}
+
+model ClientRequestAccess {
+  contactId String         @id @map("contact_id") @db.Uuid
+  tokenHash  String         @unique @map("token_hash") @db.VarChar(64)
+  createdAt  DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  contact    ContactRequest @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  @@map("client_request_access")
+}
