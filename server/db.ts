@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import pg from 'pg';
 import { AdminUser, ContactRequest, Profile, Project, Service } from './types.ts';
-import { store, TEMPLATE_PROJECTS } from './store.ts';
+import { store, TEMPLATE_PROJECTS, VERCEL_SHOWCASE_PROJECTS, SERVICE_TEMPLATE_PROJECTS } from './store.ts';
 
 const { Pool } = pg;
 
@@ -229,6 +229,55 @@ class DatabaseManager {
           "INSERT INTO app_seed_state (seed_key) VALUES ('service-linked-project-templates-v1') ON CONFLICT DO NOTHING"
         );
       }
+
+      // Seed new Vercel entries and per-service examples independently from the
+      // original template seed key, which may already exist in production databases.
+      const seedProjectCatalog = async (seedKey: string, projects: Project[]) => {
+        const state = await client.query(
+          'SELECT seed_key FROM app_seed_state WHERE seed_key = $1 LIMIT 1',
+          [seedKey]
+        );
+        if (state.rows.length > 0) return;
+
+        for (const p of projects) {
+          let resolvedServiceId: string | null = null;
+          if (p.serviceTitle) {
+            const serviceResult = await client.query(
+              'SELECT id FROM services WHERE title = $1 ORDER BY "sortOrder" ASC LIMIT 1',
+              [p.serviceTitle]
+            );
+            resolvedServiceId = serviceResult.rows[0]?.id ?? null;
+          }
+          if (!resolvedServiceId && p.serviceId) {
+            const serviceById = await client.query(
+              'SELECT id FROM services WHERE id = $1 LIMIT 1',
+              [p.serviceId]
+            );
+            resolvedServiceId = serviceById.rows[0]?.id ?? null;
+          }
+
+          await client.query(`
+            INSERT INTO projects (
+              id, title, slug, "shortDescription", description, category,
+              technologies, "coverImage", gallery, "liveUrl", "githubUrl",
+              status, featured, "sortOrder", "isTemplate", "serviceId", "createdAt", "updatedAt"
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+            ON CONFLICT DO NOTHING
+          `, [
+            p.id, p.title, p.slug, p.shortDescription, p.description, p.category,
+            p.technologies, p.coverImage, p.gallery, p.liveUrl || null, p.githubUrl || null,
+            p.status, p.featured, p.sortOrder, p.isTemplate ?? false, resolvedServiceId, p.createdAt, p.updatedAt
+          ]);
+        }
+
+        await client.query(
+          'INSERT INTO app_seed_state (seed_key) VALUES ($1) ON CONFLICT DO NOTHING',
+          [seedKey]
+        );
+      };
+
+      await seedProjectCatalog('vercel-projects-showcase-v1', VERCEL_SHOWCASE_PROJECTS);
+      await seedProjectCatalog('per-service-demo-templates-v1', SERVICE_TEMPLATE_PROJECTS);
 
       // Do not seed invented profile details on a fresh database. The owner can
       // add real contact/profile information through the protected admin panel.
