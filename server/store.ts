@@ -242,7 +242,7 @@ export const TEMPLATE_PROJECTS: Project[] = [
 - جاهزية الربط السلس مع بوابات الدفع الإلكتروني، إرسال الرسائل القصيرة SMS، والأنظمة البنكية.
 - دعم الاتصال المباشر والمجمع عبر Connection Pooling لتحقيق أفضل زمن استجابة.
 
-ملاحظة: هذا العمل نموذج تجريبي استرشادي يوضح هندسة الاتصالات وقواعد البيانات، ويمكن توظيفه لتشغيل خدمات تطبيقك بكفاءة.`
+ملاحظة: هذا العمل نموذج تجريبي استرشادي يوضح هندسة الاتصالات وقواعد البيانات، ويمكن توظيفه لتشغيل خدمات تطبيقك بكفاءة.`,
     category: 'api',
     technologies: ['Node.js', 'PostgreSQL', 'Neon DB', 'Prisma ORM', 'JWT', 'RESTful API', 'Zod'],
     coverImage: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1200&q=80',
