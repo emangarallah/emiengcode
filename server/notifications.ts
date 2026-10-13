@@ -305,6 +305,37 @@ export async function updateContactStatusWithNotifications(contactId: string, st
   }
 }
 
+export interface AdminActivityNotificationInput {
+  actorRole: AdminNoticeRole;
+  title: string;
+  message: string;
+  type?: string;
+  entityType?: string | null;
+  entityId?: string | null;
+  targetUrl?: string | null;
+}
+
+/**
+ * Notify the other operational role when an admin changes important data.
+ * A regular admin action reaches the project owner; a superadmin action reaches
+ * the admin team. Notification failures must be handled by callers and must not
+ * roll back the business action that already succeeded.
+ */
+export async function notifyAdminActivity(input: AdminActivityNotificationInput): Promise<void> {
+  const recipientRole: AdminNoticeRole = input.actorRole === 'superadmin' ? 'admin' : 'superadmin';
+  const eventId = randomUUID();
+  await insertNotification({
+    role: recipientRole,
+    title: input.title.slice(0, 200),
+    message: input.message.slice(0, 500),
+    type: input.type ?? 'admin_activity',
+    entityType: input.entityType ?? 'admin_activity',
+    entityId: input.entityId ?? null,
+    targetUrl: input.targetUrl ?? '/admin#db',
+    dedupeKey: `admin-activity:${eventId}:${recipientRole}`
+  });
+}
+
 export async function notifySystemFailure(eventKey: string, safeDescription: string): Promise<void> {
   // Pass only static, non-sensitive descriptions. Never pass exception messages or secrets.
   const safeKey = eventKey.replace(/[^a-zA-Z0-9:_-]/g, '').slice(0, 120);
