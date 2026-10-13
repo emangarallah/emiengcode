@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { 
   X, 
   ExternalLink, 
-  Github, 
   Layers, 
   Sparkles, 
   FlaskConical,
@@ -104,49 +103,102 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
             </div>
           )}
 
-          {/* Media / Gallery Area */}
-          <div className="space-y-2.5">
-            <div className="relative aspect-[16/9] rounded-xl overflow-hidden bg-slate-950 border border-slate-200 dark:border-slate-800">
-              <img
-                src={allImages[selectedImgIndex]}
-                alt={project.title}
-                className="w-full h-full object-cover"
-              />
+          {/* Live Vercel preview; image gallery remains available for projects without a deployment URL. */}
+          {project.liveUrl ? (
+            <section className="space-y-3" aria-label={isAr ? 'معاينة المشروع مباشرة' : 'Live project preview'}>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="space-y-1">
+                  <div className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-wider text-cyan-600 dark:text-cyan-300">
+                    <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                    {isAr ? 'معاينة مباشرة من Vercel' : 'Live preview from Vercel'}
+                  </div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    {isAr ? 'شاهد الموقع المنشور نفسه بدلًا من عرض كود المصدر.' : 'Explore the deployed website instead of source code.'}
+                  </p>
+                </div>
+                <a
+                  href={project.liveUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-cyan-600 to-indigo-600 px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-cyan-500/20 hover:opacity-95"
+                >
+                  <span>{isAr ? 'فتح المشروع كاملًا' : 'Open full project'}</span>
+                  <ExternalLink className="h-3.5 w-3.5" />
+                </a>
+              </div>
+
+              <div className="overflow-hidden rounded-xl border border-slate-300 bg-slate-100 shadow-xl dark:border-slate-700">
+                <div className="flex h-10 items-center gap-3 border-b border-slate-300 bg-slate-200 px-3 dark:border-slate-700 dark:bg-slate-950">
+                  <span className="flex gap-1.5" aria-hidden="true">
+                    <span className="h-2.5 w-2.5 rounded-full bg-rose-400" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-amber-400" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
+                  </span>
+                  <span className="min-w-0 flex-1 truncate rounded-md border border-slate-300 bg-white px-3 py-1 text-start font-mono text-[10px] text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+                    {project.liveUrl.replace(/^https?:\/\//, '').replace(/\/$/, '')}
+                  </span>
+                  <span className="hidden text-[9px] font-black tracking-widest text-slate-500 sm:inline">VERCEL</span>
+                </div>
+                <iframe
+                  src={project.liveUrl}
+                  title={isAr ? `معاينة ${project.title}` : `${project.title} live preview`}
+                  loading="lazy"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  allow="fullscreen; clipboard-read; clipboard-write"
+                  className="h-[55vh] min-h-[320px] max-h-[640px] w-full bg-white"
+                />
+              </div>
+              <p className="text-[11px] leading-5 text-slate-500 dark:text-slate-400">
+                {isAr
+                  ? 'إذا منع الموقع التضمين داخل النافذة، استخدم زر «فتح المشروع كاملًا» لعرضه في صفحة مستقلة.'
+                  : 'If the site blocks embedding, use “Open full project” to view it in a separate tab.'}
+              </p>
+            </section>
+          ) : (
+            <div className="space-y-2.5">
+              <div className="relative aspect-[16/9] rounded-xl overflow-hidden bg-slate-950 border border-slate-200 dark:border-slate-800">
+                <img
+                  src={allImages[selectedImgIndex]}
+                  alt={project.title}
+                  className="w-full h-full object-cover"
+                />
+                {allImages.length > 1 && (
+                  <div className="absolute inset-y-0 inset-x-2 flex items-center justify-between pointer-events-none">
+                    <button
+                      onClick={() => setSelectedImgIndex((prev) => (prev > 0 ? prev - 1 : allImages.length - 1))}
+                      className="p-2 rounded-full bg-slate-900/80 text-white hover:bg-slate-900 pointer-events-auto border border-slate-700 backdrop-blur"
+                      aria-label={isAr ? 'الصورة السابقة' : 'Previous image'}
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setSelectedImgIndex((prev) => (prev < allImages.length - 1 ? prev + 1 : 0))}
+                      className="p-2 rounded-full bg-slate-900/80 text-white hover:bg-slate-900 pointer-events-auto border border-slate-700 backdrop-blur"
+                      aria-label={isAr ? 'الصورة التالية' : 'Next image'}
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+              </div>
+
               {allImages.length > 1 && (
-                <div className="absolute inset-y-0 inset-x-2 flex items-center justify-between pointer-events-none">
-                  <button
-                    onClick={() => setSelectedImgIndex((prev) => (prev > 0 ? prev - 1 : allImages.length - 1))}
-                    className="p-2 rounded-full bg-slate-900/80 text-white hover:bg-slate-900 pointer-events-auto border border-slate-700 backdrop-blur"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => setSelectedImgIndex((prev) => (prev < allImages.length - 1 ? prev + 1 : 0))}
-                    className="p-2 rounded-full bg-slate-900/80 text-white hover:bg-slate-900 pointer-events-auto border border-slate-700 backdrop-blur"
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
+                <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                  {allImages.map((img, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setSelectedImgIndex(idx)}
+                      className={`relative w-20 h-14 rounded-lg overflow-hidden border-2 transition-all shrink-0 cursor-pointer ${
+                        selectedImgIndex === idx ? 'border-cyan-500 scale-95' : 'border-slate-300 dark:border-slate-800 opacity-60 hover:opacity-100'
+                      }`}
+                    >
+                      <img src={img} alt={isAr ? `صورة ${idx + 1}` : `Image ${idx + 1}`} className="w-full h-full object-cover" />
+                    </button>
+                  ))}
                 </div>
               )}
             </div>
-
-            {/* Gallery Thumbnails */}
-            {allImages.length > 1 && (
-              <div className="flex items-center gap-2 overflow-x-auto pb-1">
-                {allImages.map((img, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setSelectedImgIndex(idx)}
-                    className={`relative w-20 h-14 rounded-lg overflow-hidden border-2 transition-all shrink-0 cursor-pointer ${
-                      selectedImgIndex === idx ? 'border-cyan-500 scale-95' : 'border-slate-300 dark:border-slate-800 opacity-60 hover:opacity-100'
-                    }`}
-                  >
-                    <img src={img} alt="thumbnail" className="w-full h-full object-cover" />
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+          )}
 
           {/* Action Links Bar */}
           <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3">
@@ -163,17 +215,6 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
                 </a>
               )}
 
-              {project.githubUrl && (
-                <a
-                  href={project.githubUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-white text-xs font-semibold border border-slate-300 dark:border-slate-700"
-                >
-                  <Github className="w-3.5 h-3.5" />
-                  <span>{t.projects.viewCode}</span>
-                </a>
-              )}
             </div>
 
             <button
