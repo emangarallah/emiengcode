@@ -13,7 +13,8 @@ import {
   markClientNotificationRead,
   markAllClientNotificationsRead,
   updateContactStatusWithNotifications,
-  notifySystemFailure
+  notifySystemFailure,
+  notifyAdminActivity
 } from './notifications.ts';
 
 const api = Router();
@@ -22,6 +23,17 @@ const api = Router();
 const contactLimiter = createRateLimiter(6, 10 * 60 * 1000); // 6 submissions per 10 mins
 const loginLimiter = createRateLimiter(8, 15 * 60 * 1000); // 8 login attempts per 15 mins
 const notificationLimiter = createRateLimiter(40, 60 * 1000);
+
+// Activity notices are best-effort: they must never turn a successful CRUD operation into an API failure.
+function notifyAdminActivitySafely(
+  req: Request,
+  input: Omit<Parameters<typeof notifyAdminActivity>[0], 'actorRole'>
+): void {
+  void notifyAdminActivity({
+    ...input,
+    actorRole: req.admin?.role === 'superadmin' ? 'superadmin' : 'admin'
+  }).catch(() => undefined);
+}
 
 // Validation schemas
 const contactSchema = z.object({
@@ -308,12 +320,14 @@ api.post('/admin/login', loginLimiter, async (req: Request, res: Response) => {
     const admin = await db.findAdminByEmail(email);
 
     if (!admin) {
+      void notifySystemFailure('admin-login-failed', 'تم رفض محاولة تسجيل دخول إلى لوحة الإدارة.').catch(() => undefined);
       // Keep error message generic for security
       return res.status(401).json({ error: 'بيانات الدخول غير صحيحة' });
     }
 
     const isMatch = bcrypt.compareSync(password, admin.passwordHash);
     if (!isMatch) {
+      void notifySystemFailure('admin-login-failed', 'تم رفض محاولة تسجيل دخول إلى لوحة الإدارة.').catch(() => undefined);
       return res.status(401).json({ error: 'بيانات الدخول غير صحيحة' });
     }
 
@@ -324,6 +338,15 @@ api.post('/admin/login', loginLimiter, async (req: Request, res: Response) => {
     });
 
     setAuthCookie(res, token);
+    void notifyAdminActivity({
+      actorRole: admin.role === 'superadmin' ? 'superadmin' : 'admin',
+      title: 'تسجيل دخول إداري ناجح',
+      message: `تم تسجيل دخول ${admin.role === 'superadmin' ? 'مالك المشروع' : 'أحد الإداريين'} إلى لوحة الإدارة.`,
+      type: 'admin_login',
+      entityType: 'admin',
+      entityId: admin.id,
+      targetUrl: '/admin#db'
+    }).catch(() => undefined);
 
     res.json({
       success: true,
@@ -378,6 +401,14 @@ api.post('/admin/change-password', requireAdmin, async (req: Request, res: Respo
     if (!success) {
       return res.status(500).json({ error: 'تعذر تحديث كلمة المرور في قاعدة البيانات' });
     }
+    notifyAdminActivitySafely(req, {
+      title: 'تغيير كلمة مرور إدارية',
+      message: 'تم تغيير كلمة مرور حساب إداري. إذا لم يكن ذلك متوقعًا، راجع سجل الإدارة.',
+      type: 'security',
+      entityType: 'admin',
+      entityId: admin.id,
+      targetUrl: '/admin#db'
+    });
 
     res.json({ success: true, message: 'تم تحديث كلمة المرور بنجاح في قاعدة البيانات' });
   } catch (err: any) {
@@ -486,6 +517,14 @@ api.post('/admin/projects', requireAdmin, async (req: Request, res: Response) =>
     }
 
     const created = await db.createProject(parsed.data);
+    notifyAdminActivitySafely(req, {
+      title: 'إنشاء مشروع جديد',
+      message: `تم إنشاء المشروع «${created.title}» من لوحة الإدارة.`,
+      type: 'project_created',
+      entityType: 'project',
+      entityId: created.id,
+      targetUrl: '/admin#projects'
+    });
     res.status(201).json(created);
   } catch (err: any) {
     void notifySystemFailure('admin-project-create-failure', 'فشلت عملية إنشاء مشروع من لوحة الإدارة. يرجى مراجعة سجلات الخادم.').catch(() => undefined);
@@ -515,6 +554,14 @@ api.put('/admin/projects/:id', requireAdmin, async (req: Request, res: Response)
     if (!updated) {
       return res.status(404).json({ error: 'المشروع غير موجود' });
     }
+    notifyAdminActivitySafely(req, {
+      title: 'تحديث مشروع',
+      message: `تم تحديث المشروع «${updated.title}» من لوحة الإدارة.`,
+      type: 'project_updated',
+      entityType: 'project',
+      entityId: updated.id,
+      targetUrl: '/admin#projects'
+    });
     res.json(updated);
   } catch (err: any) {
     void notifySystemFailure('admin-project-update-failure', 'فشلت عملية تحديث مشروع من لوحة الإدارة. يرجى مراجعة سجلات الخادم.').catch(() => undefined);
@@ -528,6 +575,14 @@ api.delete('/admin/projects/:id', requireAdmin, async (req: Request, res: Respon
     if (!success) {
       return res.status(404).json({ error: 'المشروع غير موجود' });
     }
+    notifyAdminActivitySafely(req, {
+      title: 'حذف مشروع',
+      message: 'تم حذف مشروع من لوحة الإدارة.',
+      type: 'project_deleted',
+      entityType: 'project',
+      entityId: req.params.id,
+      targetUrl: '/admin#projects'
+    });
     res.json({ success: true, message: 'تم حذف المشروع بنجاح' });
   } catch (err: any) {
     void notifySystemFailure('admin-project-delete-failure', 'فشلت عملية حذف مشروع من لوحة الإدارة. يرجى مراجعة سجلات الخادم.').catch(() => undefined);
@@ -556,6 +611,14 @@ api.post('/admin/services', requireAdmin, async (req: Request, res: Response) =>
       });
     }
     const created = await db.createService(parsed.data);
+    notifyAdminActivitySafely(req, {
+      title: 'إضافة خدمة جديدة',
+      message: `تمت إضافة الخدمة «${created.title}» من لوحة الإدارة.`,
+      type: 'service_created',
+      entityType: 'service',
+      entityId: created.id,
+      targetUrl: '/admin#services'
+    });
     res.status(201).json(created);
   } catch (err: any) {
     res.status(500).json({ error: 'تعذر إضافة الخدمة', details: err.message });
@@ -575,6 +638,14 @@ api.put('/admin/services/:id', requireAdmin, async (req: Request, res: Response)
     if (!updated) {
       return res.status(404).json({ error: 'الخدمة غير موجودة' });
     }
+    notifyAdminActivitySafely(req, {
+      title: 'تحديث خدمة',
+      message: `تم تحديث الخدمة «${updated.title}» من لوحة الإدارة.`,
+      type: 'service_updated',
+      entityType: 'service',
+      entityId: updated.id,
+      targetUrl: '/admin#services'
+    });
     res.json(updated);
   } catch (err: any) {
     res.status(500).json({ error: 'تعذر تعديل الخدمة', details: err.message });
@@ -587,6 +658,14 @@ api.delete('/admin/services/:id', requireAdmin, async (req: Request, res: Respon
     if (!success) {
       return res.status(404).json({ error: 'الخدمة غير موجودة' });
     }
+    notifyAdminActivitySafely(req, {
+      title: 'حذف خدمة',
+      message: 'تم حذف خدمة من لوحة الإدارة.',
+      type: 'service_deleted',
+      entityType: 'service',
+      entityId: req.params.id,
+      targetUrl: '/admin#services'
+    });
     res.json({ success: true, message: 'تم حذف الخدمة بنجاح' });
   } catch (err: any) {
     res.status(500).json({ error: 'تعذر حذف الخدمة', details: err.message });
@@ -630,6 +709,14 @@ api.delete('/admin/contacts/:id', requireAdmin, async (req: Request, res: Respon
     if (!success) {
       return res.status(404).json({ error: 'طلب التواصل غير موجود' });
     }
+    notifyAdminActivitySafely(req, {
+      title: 'حذف طلب عميل',
+      message: 'تم حذف طلب تواصل من لوحة الإدارة.',
+      type: 'contact_deleted',
+      entityType: 'contact_request',
+      entityId: req.params.id,
+      targetUrl: '/admin#contacts'
+    });
     res.json({ success: true, message: 'تم حذف طلب التواصل' });
   } catch (err: any) {
     res.status(500).json({ error: 'تعذر حذف طلب التواصل', details: err.message });
@@ -648,6 +735,14 @@ api.put('/admin/profile', requireAdmin, async (req: Request, res: Response) => {
       });
     }
     const updated = await db.updateProfile(parsed.data);
+    notifyAdminActivitySafely(req, {
+      title: 'تحديث الملف التعريفي',
+      message: 'تم تحديث بيانات الملف التعريفي للموقع.',
+      type: 'profile_updated',
+      entityType: 'profile',
+      entityId: updated.id,
+      targetUrl: '/admin#profile'
+    });
     res.json(updated);
   } catch (err: any) {
     res.status(500).json({ error: 'تعذر تحديث الملف الشخصي', details: err.message });
