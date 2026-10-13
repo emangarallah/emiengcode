@@ -243,11 +243,15 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ mode, la
     }
 
     const target = item.targetUrl || '';
-    if (target === '#contact' || target === '#projects' || target === '#services') {
+    if (mode === 'admin' && target.startsWith('/admin#')) {
+      const targetTab = target.slice(target.indexOf('#') + 1).split(/[?&]/, 1)[0];
+      const adminTabs: readonly string[] = ['projects', 'services', 'contacts', 'profile', 'db'];
+      if (adminTabs.includes(targetTab)) {
+        window.dispatchEvent(new CustomEvent('emicode-admin-navigate', { detail: targetTab }));
+      }
+    } else if (mode === 'client' && ['#contact', '#projects', '#services'].includes(target)) {
       const element = document.getElementById(target.slice(1));
       element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    } else if (target.includes('#contacts') && mode === 'admin') {
-      window.dispatchEvent(new CustomEvent('emicode-admin-navigate', { detail: 'contacts' }));
     }
   };
 
