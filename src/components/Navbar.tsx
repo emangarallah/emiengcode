@@ -116,18 +116,16 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span>{lang === 'ar' ? 'EN' : 'عربي'}</span>
           </button>
 
-          {/* Admin Portal Button - Only visible when admin is authenticated */}
-          {isAdminLoggedIn && (
-            <button
-              onClick={onOpenAdmin}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border bg-emerald-50 dark:bg-emerald-950/60 border-emerald-300 dark:border-emerald-500/40 text-emerald-700 dark:text-emerald-400 shadow-sm transition-all cursor-pointer"
-              title={t.nav.admin}
-            >
-              <ShieldCheck className="w-3.5 h-3.5" />
-              <span>{t.nav.admin}</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse" />
-            </button>
-          )}
+          {/* Always-visible admin entry; server-side APIs still enforce authentication. */}
+          <button
+            onClick={onOpenAdmin}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border bg-emerald-50 dark:bg-emerald-950/60 border-emerald-300 dark:border-emerald-500/40 text-emerald-800 dark:text-emerald-300 shadow-sm transition-all cursor-pointer hover:bg-emerald-100 dark:hover:bg-emerald-900/60"
+            title={isAdminLoggedIn ? t.nav.admin : (lang === 'ar' ? 'دخول الإدارة' : 'Admin login')}
+          >
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span>{isAdminLoggedIn ? t.nav.admin : (lang === 'ar' ? 'دخول الإدارة' : 'Admin login')}</span>
+            {isAdminLoggedIn && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse" />}
+          </button>
 
           {/* CTA Request Project */}
           <button
@@ -201,23 +199,24 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           <div className="pt-3 border-t border-slate-200 dark:border-slate-800/80 flex flex-col gap-2.5">
-            {isAdminLoggedIn && (
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  onOpenAdmin();
-                }}
-                className="flex items-center justify-between w-full px-3 py-2 text-sm rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300"
-              >
-                <span className="flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                  {t.nav.admin}
-                </span>
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                onOpenAdmin();
+              }}
+              className="flex items-center justify-between w-full px-3 py-2 text-sm rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/60"
+              title={isAdminLoggedIn ? t.nav.admin : (lang === 'ar' ? 'دخول الإدارة' : 'Admin login')}
+            >
+              <span className="flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                {isAdminLoggedIn ? t.nav.admin : (lang === 'ar' ? 'دخول الإدارة' : 'Admin login')}
+              </span>
+              {isAdminLoggedIn && (
                 <span className="text-[11px] text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/60 px-2 py-0.5 rounded font-semibold">
                   {lang === 'ar' ? 'متصل' : 'Active'}
                 </span>
-              </button>
-            )}
+              )}
+            </button>
 
             <button
               onClick={() => {
