@@ -66,8 +66,12 @@ export const Navbar: React.FC<NavbarProps> = ({
             <Code2 className="w-5 h-5 stroke-[2.5]" />
           </div>
           <div>
-            <span className="text-xl font-black tracking-wider text-slate-900 dark:text-white flex items-center gap-1 font-mono">
-              EMI<span className="text-cyan-600 dark:text-cyan-400">CODE</span>
+            <span
+              aria-label="EMI CODE"
+              className="emicode-brand-word text-xl font-black tracking-wider text-slate-900 dark:text-white flex items-center gap-1 font-mono"
+            >
+              <span>EMI</span>
+              <span className="emicode-brand-highlight">CODE</span>
             </span>
             <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium block -mt-0.5 tracking-wide">
               {lang === 'ar' ? 'معرض أعمال البرمجيات' : 'ENGINEERING PORTFOLIO'}

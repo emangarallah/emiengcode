@@ -225,6 +225,13 @@ class DatabaseManager {
         "DELETE FROM projects WHERE slug IN ('emiflow-saas-erp', 'medilink-telehealth', 'albayan-flutter-app', 'finpulse-crypto-analytics', 'hypergate-api-gateway', 'dartech-estate-crm')"
       );
 
+      // Retire only Vercel catalogue entries whose projects no longer exist in this team.
+      // emicode-nu.vercel.app is retained: Vercel confirms it is an alias of the existing
+      // "emicode" project, not a separate removed project.
+      await client.query(
+        "DELETE FROM projects WHERE slug IN ('vercel-emicodin-eng', 'vercel-emicodin-na9l')"
+      );
+
       // Services are seeded once only when the table is empty. Preserve their stable IDs
       // so demo templates can be linked by service title rather than assuming legacy IDs.
       const servicesCheck = await client.query('SELECT COUNT(*) FROM services');

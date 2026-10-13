@@ -402,36 +402,6 @@ export const VERCEL_SHOWCASE_PROJECTS: Project[] = [
     isTemplate: false,
     sortOrder: 101
   }),
-  makeCatalogProject(vercelProjectId(2), {
-    title: 'EMICODE Portfolio — English',
-    slug: 'vercel-emicodin-eng',
-    shortDescription: 'النسخة الإنجليزية من معرض أعمال EMICODE المنشورة على Vercel.',
-    description: 'نسخة إنجليزية من تجربة معرض الأعمال، مفهرسة كنسخة منشورة مستقلة في Vercel.',
-    category: 'web',
-    technologies: ['React', 'TypeScript', 'Vite', 'Vercel'],
-    coverImage: 'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=1200&q=80',
-    liveUrl: 'https://emicodin-eng.vercel.app/',
-    status: 'completed',
-    serviceId: '2b829e92-36fb-48a5-8be5-6132fb7a0005',
-    serviceTitle: 'تطبيقات React وSingle Page Apps',
-    isTemplate: false,
-    sortOrder: 102
-  }),
-  makeCatalogProject(vercelProjectId(3), {
-    title: 'منصة نقل وخدمات لوجستية — Naql',
-    slug: 'vercel-emicodin-na9l',
-    shortDescription: 'مشروع ويب لقطاع النقل والخدمات اللوجستية.',
-    description: 'مشروع منشور مستقل في Vercel. صُنّف ضمن مواقع الأنشطة التجارية اعتمادًا على اسم المشروع، مع إبقاء تفاصيل النشاط قابلة للتحرير من لوحة الإدارة.',
-    category: 'commercial',
-    technologies: ['React', 'TypeScript', 'Vercel'],
-    coverImage: 'https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&w=1200&q=80',
-    liveUrl: 'https://emicodin-na9l.vercel.app/',
-    status: 'completed',
-    serviceId: '2b829e92-36fb-48a5-8be5-6132fb7a0001',
-    serviceTitle: 'مواقع الشركات والأنشطة التجارية',
-    isTemplate: false,
-    sortOrder: 103
-  }),
   makeCatalogProject(vercelProjectId(4), {
     title: 'EMICODE Portfolio — النسخة العربية',
     slug: 'vercel-emicodin',
@@ -964,7 +934,9 @@ class ResilientStore {
           'albayan-flutter-app',
           'finpulse-crypto-analytics',
           'hypergate-api-gateway',
-          'dartech-estate-crm'
+          'dartech-estate-crm',
+          'vercel-emicodin-eng',
+          'vercel-emicodin-na9l'
         ]);
 
         const projects = (parsed.projects || []).filter((p: Project) => !demoSlugs.has(p.slug));

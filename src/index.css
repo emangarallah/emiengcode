@@ -73,3 +73,61 @@
     linear-gradient(to right, rgba(0, 0, 0, 0.04) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
 }
+
+/* EMI CODE wordmark: subtle moving neon gradient, glow, and scanning underline. */
+.emicode-brand-word {
+  position: relative;
+  isolation: isolate;
+  animation: emicode-brand-breathe 3.6s ease-in-out infinite;
+}
+
+.emicode-brand-word::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  bottom: -4px;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #06b6d4, #6366f1, #a855f7, #06b6d4);
+  background-size: 220% 100%;
+  opacity: 0.85;
+  transform: scaleX(0.34);
+  transform-origin: center;
+  animation: emicode-underline-sweep 2.8s ease-in-out infinite, emicode-gradient-flow 4s linear infinite;
+}
+
+.emicode-brand-highlight {
+  color: transparent;
+  background-image: linear-gradient(100deg, #0891b2 0%, #6366f1 35%, #a855f7 55%, #06b6d4 78%, #0891b2 100%);
+  background-size: 250% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  animation: emicode-gradient-flow 4s linear infinite;
+}
+
+@keyframes emicode-gradient-flow {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 250% 50%; }
+}
+
+@keyframes emicode-brand-breathe {
+  0%, 100% {
+    filter: drop-shadow(0 0 0 rgba(6, 182, 212, 0));
+  }
+  50% {
+    filter: drop-shadow(0 0 7px rgba(6, 182, 212, 0.22));
+  }
+}
+
+@keyframes emicode-underline-sweep {
+  0%, 100% { transform: scaleX(0.25); opacity: 0.55; }
+  50% { transform: scaleX(1); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .emicode-brand-word,
+  .emicode-brand-word::after,
+  .emicode-brand-highlight {
+    animation: none !important;
+  }
+}
