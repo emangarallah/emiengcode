@@ -277,11 +277,19 @@ export async function updateContactStatusWithNotifications(contactId: string, st
         targetUrl: '#contact', dedupeKey: `${dedupeBase}:client`
       });
     }
-    await insertNotificationInTransaction(client, {
-      role: 'superadmin', title: 'تم تحديث حالة طلب',
+    const adminStatusNotice = {
+      title: 'تم تحديث حالة طلب',
       message: `تم تحديث حالة أحد الطلبات إلى «${status}» بواسطة لوحة الإدارة.`,
-      type: 'request_status', entityType: 'contact_request', entityId: contactId,
-      targetUrl: '/admin#contacts', dedupeKey: `${dedupeBase}:superadmin`
+      type: 'request_status',
+      entityType: 'contact_request',
+      entityId: contactId,
+      targetUrl: '/admin#contacts'
+    };
+    await insertNotificationInTransaction(client, {
+      role: 'admin', ...adminStatusNotice, dedupeKey: `${dedupeBase}:admin`
+    });
+    await insertNotificationInTransaction(client, {
+      role: 'superadmin', ...adminStatusNotice, dedupeKey: `${dedupeBase}:superadmin`
     });
 
     await client.query('COMMIT');
@@ -312,15 +320,15 @@ export async function notifySystemFailure(eventKey: string, safeDescription: str
   });
 }
 
-export async function listAdminNotifications(role: AdminNoticeRole): Promise<{ notifications: NotificationItem[]; unreadCount: number }> {
+export async function listAdminNotifications(role: AdminNoticeRole, includeRead = false): Promise<{ notifications: NotificationItem[]; unreadCount: number }> {
   await ensureSchema();
   const rows = await pool!.query(
     `SELECT id, title, message, type, entity_type, entity_id, target_url, read_at, created_at
        FROM notifications
-      WHERE recipient_role = $1 AND read_at IS NULL
+      WHERE recipient_role = $1 AND ($2::boolean = TRUE OR read_at IS NULL)
       ORDER BY created_at DESC
-      LIMIT 40`,
-    [role]
+      LIMIT 100`,
+    [role, includeRead]
   );
   const unread = await pool!.query(
     `SELECT COUNT(*)::int AS count
@@ -397,15 +405,16 @@ export async function getClientRequestDetails(tokens: string[], contactId: strin
   };
 }
 
-export async function listClientNotifications(tokens: string[]): Promise<{ notifications: NotificationItem[]; unreadCount: number } | null> {
+export async function listClientNotifications(tokens: string[], includeRead = false): Promise<{ notifications: NotificationItem[]; unreadCount: number } | null> {
   const tokenHashes = await getValidClientTokenHashes(tokens);
   if (!tokenHashes.length) return null;
   const rows = await pool!.query(
     `SELECT id, title, message, type, entity_type, entity_id, target_url, read_at, created_at
        FROM notifications
-      WHERE recipient_role = 'client' AND recipient_key = ANY($1::varchar[]) AND read_at IS NULL
-      ORDER BY created_at DESC LIMIT 30`,
-    [tokenHashes]
+      WHERE recipient_role = 'client' AND recipient_key = ANY($1::varchar[])
+        AND ($2::boolean = TRUE OR read_at IS NULL)
+      ORDER BY created_at DESC LIMIT 100`,
+    [tokenHashes, includeRead]
   );
   const unread = await pool!.query(
     `SELECT COUNT(*)::int AS count FROM notifications
