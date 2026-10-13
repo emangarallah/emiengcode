@@ -988,7 +988,7 @@ class ResilientStore {
     }
 
     const initial: DatabaseData = {
-      projects: TEMPLATE_PROJECTS,
+      projects: SEED_PROJECTS,
       admins: [],
       services: SEED_SERVICES,
       contact_requests: [],
