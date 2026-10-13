@@ -61,6 +61,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ mode, la
   const [items, setItems] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
@@ -88,11 +89,11 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ mode, la
 
     try {
       const response = mode === 'admin'
-        ? await fetch('/api/admin/notifications', { credentials: 'include' })
+        ? await fetch(`/api/admin/notifications${showHistory ? '?history=true' : ''}`, { credentials: 'include' })
         : await fetch('/api/client/notifications', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ trackingTokens: tokens })
+            body: JSON.stringify({ trackingTokens: tokens, includeRead: showHistory })
           });
       if (!response.ok) {
         setErrorMessage(isAr
@@ -122,7 +123,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ mode, la
     } finally {
       setIsLoading(false);
     }
-  }, [mode, isAr]);
+  }, [mode, isAr, showHistory]);
 
   useEffect(() => {
     let active = true;
@@ -307,6 +308,14 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ mode, la
                   {busyId === 'all' ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <CheckCheck className="h-4 w-4" />}
                 </button>
               )}
+              <button
+                type="button"
+                onClick={() => setShowHistory((value) => !value)}
+                className="rounded-lg px-2 py-1.5 text-[11px] font-semibold text-cyan-300 hover:bg-slate-800"
+                title={isAr ? 'عرض الإشعارات المقروءة' : 'Show read notifications'}
+              >
+                {isAr ? (showHistory ? 'غير المقروء' : 'السجل') : (showHistory ? 'Unread' : 'History')}
+              </button>
               <button type="button" onClick={() => setIsOpen(false)} className="rounded-lg p-2 text-slate-400 hover:bg-slate-800 hover:text-white" aria-label={isAr ? 'إغلاق' : 'Close'}>
                 <X className="h-4 w-4" />
               </button>
@@ -327,7 +336,9 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ mode, la
             ) : items.length === 0 ? (
               <div className="p-8 text-center text-sm text-slate-400">
                 <Bell className="mx-auto mb-2 h-6 w-6 opacity-50" />
-                {isAr ? 'لا توجد إشعارات حتى الآن' : 'No notifications yet'}
+                {showHistory
+                  ? (isAr ? 'لا يوجد سجل إشعارات بعد' : 'No notification history yet')
+                  : (isAr ? 'لا توجد إشعارات غير مقروءة' : 'No unread notifications')}
               </div>
             ) : items.map((item) => (
               <button
