@@ -255,8 +255,6 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ mode, la
     }
   };
 
-  if (mode === 'client' && trackingTokens.length === 0) return null;
-
   const title = mode === 'admin'
     ? (isAr ? 'إشعارات الإدارة والمبرمج' : 'Admin & developer notifications')
     : (isAr ? 'إشعارات طلبك' : 'Your request notifications');
@@ -340,9 +338,13 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ mode, la
             ) : items.length === 0 ? (
               <div className="p-8 text-center text-sm text-slate-400">
                 <Bell className="mx-auto mb-2 h-6 w-6 opacity-50" />
-                {showHistory
-                  ? (isAr ? 'لا يوجد سجل إشعارات بعد' : 'No notification history yet')
-                  : (isAr ? 'لا توجد إشعارات غير مقروءة' : 'No unread notifications')}
+                {mode === 'client' && trackingTokens.length === 0
+                  ? (isAr
+                    ? 'ستظهر إشعاراتك هنا بعد إرسال طلب من نموذج التواصل.'
+                    : 'Your notifications will appear here after you submit a request using the contact form.')
+                  : showHistory
+                    ? (isAr ? 'لا يوجد سجل إشعارات بعد' : 'No notification history yet')
+                    : (isAr ? 'لا توجد إشعارات غير مقروءة' : 'No unread notifications')}
               </div>
             ) : items.map((item) => (
               <button
