@@ -7,12 +7,14 @@ interface ProjectCardProps {
   project: Project;
   lang: Language;
   onSelectProject: (p: Project) => void;
+  onRequestSimilar?: (projectName: string, serviceTitle?: string | null) => void;
 }
 
 export const ProjectCard: React.FC<ProjectCardProps> = ({
   project,
   lang,
   onSelectProject,
+  onRequestSimilar,
 }) => {
   const t = translations[lang];
 
@@ -146,6 +148,17 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
             <span>{t.projects.viewDetails}</span>
             <ArrowUpRight className="w-3.5 h-3.5" />
           </button>
+
+          {/* Request a similar project when the parent page supplies this action. */}
+          {onRequestSimilar && (
+            <button
+              type="button"
+              onClick={() => onRequestSimilar(project.title, project.serviceTitle ?? null)}
+              className="font-semibold text-slate-600 hover:text-cyan-600 dark:text-slate-300 dark:hover:text-cyan-300 transition-colors"
+            >
+              {isAr ? 'طلب مشروع مشابه' : 'Request similar'}
+            </button>
+          )}
 
           {/* External Links */}
           <div className="flex items-center gap-2">
