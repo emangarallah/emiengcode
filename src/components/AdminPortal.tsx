@@ -203,7 +203,12 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         );
       }
 
-      let data: { success?: boolean; error?: string; admin?: any };
+      let data: {
+        success?: boolean;
+        error?: string;
+        token?: string;
+        admin?: { id: string; email: string; role: string };
+      };
       try {
         data = await res.json();
       } catch {
