@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { timingSafeEqual } from 'node:crypto';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { db } from './db.ts';
@@ -12,6 +13,41 @@ function requireJwtSecret(): string {
   return JWT_SECRET!;
 }
 const COOKIE_NAME = 'emicode_session';
+
+const OWNER_EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+export function getConfiguredOwnerEmail(): string | null {
+  const email = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+  if (!email || !OWNER_EMAIL_PATTERN.test(email) || email.endsWith('@example.com')) return null;
+  return email;
+}
+
+export function hasConfiguredOwnerCredentials(): boolean {
+  const email = getConfiguredOwnerEmail();
+  const password = process.env.ADMIN_PASSWORD;
+  return Boolean(
+    email &&
+    typeof password === 'string' &&
+    password.length >= 12 &&
+    !password.toLowerCase().includes('replace-me')
+  );
+}
+
+export function isConfiguredOwnerEmail(email: string): boolean {
+  const ownerEmail = getConfiguredOwnerEmail();
+  return Boolean(ownerEmail && email.trim().toLowerCase() === ownerEmail);
+}
+
+// Compare the environment secret without ordinary string-comparison timing leakage.
+export function verifyConfiguredOwnerPassword(password: string): boolean {
+  const expected = process.env.ADMIN_PASSWORD;
+  if (typeof expected !== 'string' || expected.length < 12 || expected.toLowerCase().includes('replace-me')) {
+    return false;
+  }
+  const actualBytes = Buffer.from(password, 'utf8');
+  const expectedBytes = Buffer.from(expected, 'utf8');
+  return actualBytes.length === expectedBytes.length && timingSafeEqual(actualBytes, expectedBytes);
+}
 
 export interface AdminPayload {
   adminId: string;
@@ -66,6 +102,9 @@ export function clearAuthCookie(res: Response) {
 // Verify admin session middleware
 export async function requireAdmin(req: Request, res: Response, next: NextFunction) {
   try {
+    if (!hasConfiguredOwnerCredentials()) {
+      return res.status(503).json({ error: 'بيانات دخول مالك المشروع غير مكتملة. تحقق من ADMIN_EMAIL وADMIN_PASSWORD في متغيرات بيئة الخادم.' });
+    }
     if (!hasSecureJwtSecret()) {
       return res.status(503).json({ error: 'إعدادات المصادقة غير مكتملة. يرجى ضبط JWT_SECRET في بيئة الخادم.' });
     }
@@ -87,8 +126,16 @@ export async function requireAdmin(req: Request, res: Response, next: NextFuncti
     const decoded = jwt.verify(token, requireJwtSecret()) as AdminPayload;
     const admin = await db.findAdminById(decoded.adminId);
 
-    // Only the project owner account may access administration APIs.
-    if (!admin || admin.role !== 'superadmin') {
+    // Only the single owner account configured in Vercel may access administration APIs.
+    const ownerEmail = getConfiguredOwnerEmail();
+    if (
+      !admin ||
+      admin.role !== 'superadmin' ||
+      !ownerEmail ||
+      admin.email.trim().toLowerCase() !== ownerEmail ||
+      typeof decoded.email !== 'string' ||
+      decoded.email.trim().toLowerCase() !== ownerEmail
+    ) {
       return res.status(403).json({ error: 'Forbidden: Owner administrator access required' });
     }
 
