@@ -114,7 +114,8 @@ const profileSchema = z.object({
   headline: z.string().min(5),
   bio: z.string().min(10),
   email: z.string().email(),
-  whatsapp: z.string().min(5),
+  // Allow an empty profile contact number so administrators can clear legacy public-contact data.
+  whatsapp: z.string().max(50).optional().nullable(),
   githubUrl: z.string().optional().nullable(),
   linkedinUrl: z.string().optional().nullable(),
   resumeUrl: z.string().optional().nullable()
