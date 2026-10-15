@@ -18,6 +18,7 @@ import {
   CheckCircle2, 
   RefreshCw,
   Phone,
+  Smartphone,
   Mail,
   Eye,
   EyeOff,
@@ -959,8 +960,15 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                                   rel="noopener noreferrer"
                                   className="px-3 py-1.5 rounded-lg bg-emerald-950/60 hover:bg-emerald-900 text-emerald-300 flex items-center gap-1.5 border border-emerald-800/80"
                                 >
-                                  <Phone className="w-3.5 h-3.5 text-emerald-400" />
+                                  <MessageSquare className="w-3.5 h-3.5 text-emerald-400" />
                                   <span>مراسلة واتساب</span>
+                                </a>
+                                <a
+                                  href={`sms:${req.phone.replace(/[^0-9+]/g, '')}`}
+                                  className="px-3 py-1.5 rounded-lg bg-blue-950/50 hover:bg-blue-900/70 text-blue-300 flex items-center gap-1.5 border border-blue-800/70"
+                                >
+                                  <Smartphone className="w-3.5 h-3.5 text-blue-400" />
+                                  <span>{isAr ? 'رسالة نصية' : 'SMS'}</span>
                                 </a>
                               </>
                             )}
