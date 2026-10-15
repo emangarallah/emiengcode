@@ -87,8 +87,9 @@ export async function requireAdmin(req: Request, res: Response, next: NextFuncti
     const decoded = jwt.verify(token, requireJwtSecret()) as AdminPayload;
     const admin = await db.findAdminById(decoded.adminId);
 
-    if (!admin || !['admin', 'superadmin'].includes(admin.role)) {
-      return res.status(401).json({ error: 'Unauthorized: Session is invalid or revoked' });
+    // Only the project owner account may access administration APIs.
+    if (!admin || admin.role !== 'superadmin') {
+      return res.status(403).json({ error: 'Forbidden: Owner administrator access required' });
     }
 
     req.admin = {
