@@ -127,7 +127,11 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   };
 
   useEffect(() => {
-    checkAuthAndLoad();
+    sessionStorage.removeItem('emicode_admin_token');
+    localStorage.removeItem('emicode_token');
+    setToken(false);
+    setAdminUser(null);
+    fetch('/api/admin/logout', { method: 'POST', credentials: 'include' }).catch(() => undefined);
   }, []);
 
   useEffect(() => {
