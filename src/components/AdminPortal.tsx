@@ -66,6 +66,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   const [services, setServices] = useState<Service[]>([]);
   const [contacts, setContacts] = useState<ContactRequest[]>([]);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   // Project Editor Modal
@@ -426,17 +427,24 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   // ================= Profile Handlers =================
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!profile) return;
+    if (!profile || isSavingProfile) return;
+    setIsSavingProfile(true);
     try {
       const res = await authFetch('/api/admin/profile', {
         method: 'PUT',
         body: JSON.stringify(profile)
       });
-      if (!res.ok) throw new Error('فشل تحديث الملف الشخصي');
-      showNotify(isAr ? 'تم تحديث الملف الشخصي بنجاح' : 'Profile updated');
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || (isAr ? 'فشل تحديث الملف الشخصي' : 'Failed to update profile'));
+      }
+      setProfile(data);
+      showNotify(isAr ? 'تم حفظ بيانات الملف الشخصي بنجاح' : 'Profile saved successfully');
       onDataChanged();
     } catch (err: any) {
-      showNotify(err.message, 'error');
+      showNotify(err.message || (isAr ? 'تعذر حفظ الملف الشخصي' : 'Could not save profile'), 'error');
+    } finally {
+      setIsSavingProfile(false);
     }
   };
 
@@ -939,11 +947,11 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                           {/* Quick response actions */}
                           <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
                             <a
-                              href={`mailto:${req.email}?subject=بخصوص طلبك لدى EMICODE`}
+                              href={`mailto:${req.email}?subject=${encodeURIComponent(isAr ? 'بخصوص طلبك لدى EMICODE' : 'Regarding your EMICODE request')}&body=${encodeURIComponent(isAr ? `مرحبًا ${req.name}،\n\nشكرًا لتواصلك مع EMICODE بخصوص طلب ${req.serviceType}. يسعدني مناقشة تفاصيل مشروعك معك.\n\nتحياتي،\nEMICODE` : `Hello ${req.name},\n\nThank you for contacting EMICODE about your ${req.serviceType} request. I would be happy to discuss your project details.\n\nRegards,\nEMICODE`)}`}
                               className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center gap-1.5"
                             >
                               <Mail className="w-3.5 h-3.5 text-cyan-400" />
-                              <span>رد بالبريد</span>
+                              <span>{isAr ? 'الرد عبر البريد' : 'Reply by email'}</span>
                             </a>
                             {req.phone && (
                               <>
@@ -952,23 +960,23 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                                   className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center gap-1.5 font-mono"
                                 >
                                   <Phone className="w-3.5 h-3.5 text-cyan-400" />
-                                  <span>اتصال ({req.phone})</span>
+                                  <span>{isAr ? `اتصال بالعميل: ${req.phone}` : `Call client: ${req.phone}`}</span>
                                 </a>
                                 <a
-                                  href={`https://wa.me/${req.phone.replace(/[^0-9]/g, '')}`}
+                                  href={`https://wa.me/${req.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(isAr ? `مرحبًا ${req.name}، شكرًا لتواصلك مع EMICODE بخصوص طلبك. يسعدني مناقشة تفاصيل مشروعك معك.` : `Hello ${req.name}, thanks for contacting EMICODE. I would be happy to discuss your project request with you.`)}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="px-3 py-1.5 rounded-lg bg-emerald-950/60 hover:bg-emerald-900 text-emerald-300 flex items-center gap-1.5 border border-emerald-800/80"
                                 >
                                   <MessageSquare className="w-3.5 h-3.5 text-emerald-400" />
-                                  <span>مراسلة واتساب</span>
+                                  <span>{isAr ? 'رد عبر واتساب' : 'Reply on WhatsApp'}</span>
                                 </a>
                                 <a
-                                  href={`sms:${req.phone.replace(/[^0-9+]/g, '')}`}
+                                  href={`sms:${req.phone.replace(/[^0-9+]/g, '')}?body=${encodeURIComponent(isAr ? `مرحبًا ${req.name}، معك EMICODE بخصوص طلب مشروعك. يسعدني التواصل معك لمناقشة التفاصيل.` : `Hello ${req.name}, this is EMICODE regarding your project request. I would be happy to discuss the details with you.`)}`}
                                   className="px-3 py-1.5 rounded-lg bg-blue-950/50 hover:bg-blue-900/70 text-blue-300 flex items-center gap-1.5 border border-blue-800/70"
                                 >
                                   <Smartphone className="w-3.5 h-3.5 text-blue-400" />
-                                  <span>{isAr ? 'رسالة نصية' : 'SMS'}</span>
+                                  <span>{isAr ? 'الرد برسالة نصية' : 'Reply by SMS'}</span>
                                 </a>
                               </>
                             )}
@@ -982,35 +990,136 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 
               {/* TAB 4: PROFILE */}
               {activeTab === 'profile' && profile && (
-                <form onSubmit={handleSaveProfile} className="space-y-4 max-w-2xl">
+                <form onSubmit={handleSaveProfile} className="space-y-5 max-w-3xl">
+                  <div className="space-y-1">
+                    <h3 className="text-base font-bold text-white">{isAr ? 'البيانات الشخصية والملف التعريفي' : 'Personal Details & Public Profile'}</h3>
+                    <p className="text-xs leading-relaxed text-slate-400">
+                      {isAr ? 'عدّل الاسم والعنوان المهني والنبذة وبيانات التواصل والروابط، ثم احفظ لتحديث البيانات في قاعدة البيانات.' : 'Edit your name, professional headline, bio, contact details and links, then save to persist them to the database.'}
+                    </p>
+                  </div>
+
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-xs font-semibold text-slate-300">GitHub</label>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-slate-300">{isAr ? 'الاسم الظاهر' : 'Display name'}</label>
                       <input
                         type="text"
-                        value={profile.githubUrl || ''}
-                        onChange={(e) => setProfile({ ...profile, githubUrl: e.target.value })}
-                        className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white font-mono"
+                        required
+                        minLength={2}
+                        maxLength={100}
+                        value={profile.displayName || ''}
+                        onChange={(e) => setProfile({ ...profile, displayName: e.target.value })}
+                        placeholder={isAr ? 'اسمك الذي يظهر في الموقع' : 'Your public name'}
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white outline-none focus:border-cyan-500"
                       />
                     </div>
-                    <div className="space-y-1">
-                      <label className="text-xs font-semibold text-slate-300">LinkedIn</label>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-slate-300">{isAr ? 'العنوان المهني' : 'Professional headline'}</label>
                       <input
                         type="text"
-                        value={profile.linkedinUrl || ''}
-                        onChange={(e) => setProfile({ ...profile, linkedinUrl: e.target.value })}
-                        className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white font-mono"
+                        required
+                        minLength={5}
+                        maxLength={200}
+                        value={profile.headline || ''}
+                        onChange={(e) => setProfile({ ...profile, headline: e.target.value })}
+                        placeholder={isAr ? 'مثال: مهندس برمجيات Full-Stack' : 'e.g. Full-Stack Software Engineer'}
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white outline-none focus:border-cyan-500"
                       />
                     </div>
                   </div>
 
-                  <button
-                    type="submit"
-                    className="px-6 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md"
-                  >
-                    <Save className="w-4 h-4" />
-                    <span>حفظ التعديلات</span>
-                  </button>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-300">{isAr ? 'النبذة التعريفية' : 'Biography'}</label>
+                    <textarea
+                      required
+                      minLength={10}
+                      rows={4}
+                      maxLength={3000}
+                      value={profile.bio || ''}
+                      onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
+                      placeholder={isAr ? 'اكتب نبذة قصيرة عن خبرتك وخدماتك...' : 'Describe your experience and services...'}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white outline-none focus:border-cyan-500 resize-y"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-slate-300">{isAr ? 'البريد الإلكتروني' : 'Email address'}</label>
+                      <input
+                        type="email"
+                        required
+                        value={profile.email || ''}
+                        onChange={(e) => setProfile({ ...profile, email: e.target.value })}
+                        placeholder="name@example.com"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white outline-none focus:border-cyan-500"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-slate-300">{isAr ? 'رقم التواصل / واتساب' : 'Contact number / WhatsApp'}</label>
+                      <input
+                        type="tel"
+                        inputMode="tel"
+                        value={profile.whatsapp || ''}
+                        onChange={(e) => setProfile({ ...profile, whatsapp: e.target.value })}
+                        placeholder={isAr ? '+967 771 234 567' : '+967 771 234 567'}
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white outline-none focus:border-cyan-500"
+                      />
+                      <p className="text-[11px] text-slate-500">{isAr ? 'هذا الحقل محفوظ في الملف التعريفي؛ لا يعيد إظهار رقم الهاتف في الواجهة العامة تلقائيًا.' : 'This is stored in your profile; it will not automatically add a public phone link.'}</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-slate-300">GitHub</label>
+                      <input
+                        type="url"
+                        value={profile.githubUrl || ''}
+                        onChange={(e) => setProfile({ ...profile, githubUrl: e.target.value })}
+                        placeholder="https://github.com/username"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white font-mono outline-none focus:border-cyan-500"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-slate-300">LinkedIn</label>
+                      <input
+                        type="url"
+                        value={profile.linkedinUrl || ''}
+                        onChange={(e) => setProfile({ ...profile, linkedinUrl: e.target.value })}
+                        placeholder="https://linkedin.com/in/username"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white font-mono outline-none focus:border-cyan-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-300">{isAr ? 'رابط السيرة الذاتية (اختياري)' : 'Resume URL (optional)'}</label>
+                    <input
+                      type="url"
+                      value={profile.resumeUrl || ''}
+                      onChange={(e) => setProfile({ ...profile, resumeUrl: e.target.value })}
+                      placeholder="https://..."
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white font-mono outline-none focus:border-cyan-500"
+                    />
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-3 pt-2">
+                    <button
+                      type="submit"
+                      disabled={isSavingProfile}
+                      className="px-6 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 disabled:opacity-60 disabled:cursor-wait text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md"
+                    >
+                      {isSavingProfile ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                      <span>{isSavingProfile ? (isAr ? 'جارٍ الحفظ...' : 'Saving...') : (isAr ? 'حفظ بيانات الملف الشخصي' : 'Save profile')}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={loadProfile}
+                      disabled={isSavingProfile}
+                      className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 disabled:opacity-60 text-slate-200 font-bold text-xs flex items-center gap-2"
+                    >
+                      <RefreshCw className="w-4 h-4" />
+                      <span>{isAr ? 'إعادة تحميل البيانات' : 'Reload saved data'}</span>
+                    </button>
+                  </div>
                 </form>
               )}
 
