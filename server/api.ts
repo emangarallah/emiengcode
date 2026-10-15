@@ -19,11 +19,27 @@ import {
 
 const api = Router();
 
-// Public health endpoint for checking that requests reach the deployed API.
-api.get('/health', (_req: Request, res: Response) => {
-  res.status(200).json({
-    ok: true,
+// Public health endpoint for diagnosing the API and its database dependency.
+// Exposes only whether the database is configured/reachable, never credentials or raw errors.
+api.get('/health', async (_req: Request, res: Response) => {
+  const configured = Boolean(process.env.DATABASE_URL?.trim());
+  let connected = false;
+  try {
+    connected = configured && await db.waitUntilInitialized();
+  } catch {
+    connected = false;
+  }
+
+  const healthy = configured && connected;
+  res.status(healthy ? 200 : 503).json({
+    ok: healthy,
     service: 'EMICODE API',
+    database: { configured, connected },
+    message: !configured
+      ? 'DATABASE_URL is not configured in the server environment.'
+      : !connected
+        ? 'Neon PostgreSQL is not reachable or its schema could not be initialized. Check server logs and Vercel environment variables.'
+        : 'API and database are ready.',
     timestamp: new Date().toISOString()
   });
 });
@@ -325,7 +341,8 @@ api.post('/admin/login', loginLimiter, async (req: Request, res: Response) => {
       return res.status(503).json({ error: 'لوحة الإدارة غير متاحة حتى يتم الاتصال بقاعدة Neon.' });
     }
 
-    const { email, password } = parsed.data;
+    const email = parsed.data.email.trim().toLowerCase();
+    const { password } = parsed.data;
     const admin = await db.findAdminByEmail(email);
 
     if (!admin) {
@@ -367,7 +384,10 @@ api.post('/admin/login', loginLimiter, async (req: Request, res: Response) => {
       }
     });
   } catch (err: any) {
-    res.status(500).json({ error: 'خطأ في عملية تسجيل الدخول', details: err.message });
+    // Keep implementation details out of the public response; database/auth errors
+    // are diagnosed through server logs and the redacted /api/health endpoint.
+    console.error('[API] Admin login failed unexpectedly:', err instanceof Error ? err.name : 'UnknownError');
+    res.status(500).json({ error: 'تعذر إكمال تسجيل الدخول. تحقق من إعدادات الخادم وحاول مجددًا.' });
   }
 });
 
