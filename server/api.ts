@@ -66,7 +66,11 @@ const contactSchema = z.object({
   email: z.string().email('صيغة البريد الإلكتروني غير صحيحة').max(150),
   serviceType: z.string().min(2, 'يرجى تحديد نوع الخدمة المطلوب').max(150),
   serviceId: z.string().uuid().optional().nullable(),
-  phone: z.string().max(50).optional().nullable(),
+  phone: z.string()
+    .trim()
+    .min(6, 'يرجى إدخال رقم هاتف صحيح للتواصل')
+    .max(50, 'رقم الهاتف طويل جدًا')
+    .regex(/^[+0-9().\-\s]+$/, 'رقم الهاتف يجب أن يحتوي على أرقام ورمز الدولة فقط'),
   budget: z.string().max(100).optional().nullable(),
   timeline: z.string().max(100).optional().nullable(),
   additionalFeatures: z.string().max(3000).optional().nullable(),
