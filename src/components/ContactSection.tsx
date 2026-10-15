@@ -3,7 +3,7 @@ import {
   Send, 
   MessageSquare, 
   Mail, 
-  Phone, 
+  Instagram, 
   CheckCircle2, 
   AlertCircle, 
   Clock, 
@@ -142,14 +142,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
     }
   };
 
-  // WhatsApp link preparation
-  const whatsappNumber = profile?.whatsapp?.trim() || '';
-  const cleanPhone = whatsappNumber.replace(/[^0-9]/g, '');
-  const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(
-    isAr 
-      ? 'مرحبًا م. عماد، أود استشارتك بشأن مشروع برمجي جديد.'
-      : 'Hello! I would like to inquire about software engineering for a new project.'
-  )}`;
+  const instagramUrl = 'https://www.instagram.com/code_emi?srtk=MXR5aHphOXByZ2J3ZQ==';
 
   return (
     <section id="contact" className="py-20 border-t border-slate-200 dark:border-slate-900 bg-slate-50 dark:bg-slate-950 transition-colors">
@@ -171,7 +164,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
           
-          {/* Contact Details & Direct WhatsApp/Email */}
+          {/* Contact Details & Direct Contact */}
           <div className="lg:col-span-5 space-y-6 text-start">
             
             <div className="p-6 rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 space-y-5 shadow-xs dark:shadow-md">
@@ -181,26 +174,24 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
               </h3>
               
               <div className="space-y-4">
-                {/* WhatsApp */}
-                {cleanPhone && (
+                {/* Instagram */}
                 <a
-                  href={whatsappUrl}
+                  href={instagramUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-4 rounded-xl bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:hover:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/60 flex items-center justify-between text-emerald-800 dark:text-emerald-300 transition-colors group cursor-pointer"
+                  className="p-4 rounded-xl bg-fuchsia-50 hover:bg-fuchsia-100 dark:bg-fuchsia-950/40 dark:hover:bg-fuchsia-950/60 border border-fuchsia-200 dark:border-fuchsia-800/60 flex items-center justify-between text-fuchsia-800 dark:text-fuchsia-300 transition-colors group cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-900/60 flex items-center justify-center text-emerald-600 dark:text-emerald-300">
-                      <Phone className="w-5 h-5" />
+                    <div className="w-10 h-10 rounded-lg bg-fuchsia-100 dark:bg-fuchsia-900/60 flex items-center justify-center text-fuchsia-600 dark:text-fuchsia-300">
+                      <Instagram className="w-5 h-5" />
                     </div>
                     <div>
-                      <div className="text-xs text-slate-500 dark:text-slate-400">{t.contact.form.whatsAppCta}</div>
-                      <div className="text-sm font-bold text-slate-900 dark:text-white font-mono mt-0.5">+{whatsappNumber}</div>
+                      <div className="text-xs text-slate-500 dark:text-slate-400">Instagram</div>
+                      <div className="text-sm font-bold text-slate-900 dark:text-white mt-0.5">@code_emi</div>
                     </div>
                   </div>
                   <ArrowIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </a>
-                )}
 
                 {/* Email */}
                 {profile?.email && (
