@@ -20,12 +20,22 @@ class DatabaseManager {
   private isNeonActive: boolean = false;
   private statusMessage: string = 'Initializing database...';
   private initPromise: Promise<void>;
+  private lastInitAttemptAt = 0;
 
   constructor() {
     this.initPromise = this.init();
   }
 
   async waitUntilInitialized(): Promise<boolean> {
+    await this.initPromise;
+    if (this.isNeonConnected()) return true;
+
+    // Serverless instances can survive a transient Neon outage. Retry connection
+    // initialization periodically instead of permanently caching the first failure.
+    if (!process.env.DATABASE_URL?.trim()) return false;
+    if (Date.now() - this.lastInitAttemptAt < 15_000) return false;
+
+    this.initPromise = this.init();
     await this.initPromise;
     return this.isNeonConnected();
   }
@@ -35,6 +45,7 @@ class DatabaseManager {
   }
 
   private async init() {
+    this.lastInitAttemptAt = Date.now();
     const dbUrl = process.env.DATABASE_URL;
     if (!dbUrl || dbUrl.trim() === '' || dbUrl.includes('MY_DATABASE_URL')) {
       this.isNeonActive = false;
