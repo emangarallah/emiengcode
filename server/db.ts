@@ -133,10 +133,22 @@ class DatabaseManager {
     }
 
     const existing = await client.query(
-      'SELECT id FROM admins WHERE LOWER(email) = LOWER($1) LIMIT 1',
+      'SELECT id, "passwordHash", role FROM admins WHERE LOWER(email) = LOWER($1) LIMIT 1',
       [email]
     );
-    if (existing.rows.length > 0) return;
+    if (existing.rows.length > 0) {
+      const owner = existing.rows[0];
+      const passwordMatches = await bcrypt.compare(password, owner.passwordHash);
+      if (owner.role !== 'superadmin' || !passwordMatches) {
+        const synchronizedHash = await bcrypt.hash(password, 12);
+        await client.query(
+          'UPDATE admins SET role = $1, "passwordHash" = $2 WHERE id = $3',
+          ['superadmin', synchronizedHash, owner.id]
+        );
+        console.log('[DB] Synchronized the configured owner account with its Vercel environment credentials.');
+      }
+      return;
+    }
 
     const passwordHash = await bcrypt.hash(password, 12);
     const inserted = await client.query(
