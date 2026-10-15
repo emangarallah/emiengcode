@@ -20,7 +20,7 @@ app.use((req, _res, next) => {
 
   if (forwardedPath !== null) {
     parsedUrl.searchParams.delete('__vercel_path');
-    const normalizedPath = forwardedPath.replace(/^\\/+/, '');
+    const normalizedPath = forwardedPath.split('/').filter(Boolean).join('/');
     req.url = `/api/${normalizedPath}${parsedUrl.search}`;
     return next();
   }
