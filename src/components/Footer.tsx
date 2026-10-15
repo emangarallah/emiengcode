@@ -1,5 +1,5 @@
 import React from 'react';
-import { Code2, Github, Linkedin, Phone, Mail, Database, ShieldCheck } from 'lucide-react';
+import { Code2, Github, Linkedin, Instagram, Mail, Database, ShieldCheck } from 'lucide-react';
 import { Profile } from '../types.ts';
 import { Language, translations } from '../i18n.ts';
 import { ThemeToggle } from './ThemeToggle.tsx';
@@ -95,17 +95,16 @@ export const Footer: React.FC<FooterProps> = ({
                 <Linkedin className="w-4 h-4" />
               </a>
             )}
-            {profile?.whatsapp && (
-              <a
-                href={`https://wa.me/${profile.whatsapp.replace(/[^0-9]/g, '')}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 rounded-lg bg-emerald-50 dark:bg-slate-900 border border-emerald-200 dark:border-slate-800 text-emerald-700 dark:text-emerald-400 hover:text-emerald-900 dark:hover:text-emerald-300 transition-colors"
-                title="WhatsApp"
-              >
-                <Phone className="w-4 h-4" />
-              </a>
-            )}
+            <a
+              href="https://www.instagram.com/code_emi?srtk=MXR5aHphOXByZ2J3ZQ=="
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-2 rounded-lg bg-fuchsia-50 dark:bg-slate-900 border border-fuchsia-200 dark:border-slate-800 text-fuchsia-700 dark:text-fuchsia-400 hover:text-fuchsia-900 dark:hover:text-fuchsia-300 transition-colors"
+              title="Instagram"
+              aria-label="Instagram @code_emi"
+            >
+              <Instagram className="w-4 h-4" />
+            </a>
             {profile?.email && (
               <a
                 href={`mailto:${profile.email}`}
