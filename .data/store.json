@@ -124,7 +124,7 @@
   "admins": [
     {
       "id": "00000000-0000-0000-0000-000000000001",
-      "email": "emicode003@il.com",
+      "email": "emicode003@gmail.com",
       "passwordHash": "$2b$10$Tz6eQ8a15RvUk7BrVLIVzudFiRfDR5CHTUPPRT/ZE.HphS/JJLadi",
       "role": "superadmin",
       "createdAt": "2026-10-13T06:45:45.201Z"
