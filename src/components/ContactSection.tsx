@@ -311,15 +311,20 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                    {t.contact.form.phone}
+                    {t.contact.form.phone} <span className="text-rose-500">*</span>
                   </label>
                   <input
                     type="tel"
+                    required
+                    autoComplete="tel"
+                    inputMode="tel"
+                    maxLength={50}
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder={t.contact.form.phonePlaceholder}
                     className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none font-mono"
                   />
+                  <p className="text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">{t.contact.form.phoneHint}</p>
                 </div>
 
                 <div className="space-y-1.5">
