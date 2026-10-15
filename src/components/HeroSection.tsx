@@ -8,7 +8,7 @@ import {
   Layers, 
   Cpu, 
   Database,
-  Phone,
+  Instagram,
   Mail
 } from 'lucide-react';
 import { Language, translations } from '../i18n.ts';
@@ -92,23 +92,26 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             {/* Direct Contact Links */}
             {profile && (
               <div className="pt-1 flex flex-wrap items-center gap-2.5 text-xs">
+                {profile.email && (
+                  <a
+                    href={`mailto:${profile.email}`}
+                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white hover:bg-slate-100 dark:bg-slate-900/90 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors shadow-xs"
+                    title="Email"
+                  >
+                    <Mail className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
+                    <span>{profile.email}</span>
+                  </a>
+                )}
                 <a
-                  href={`https://wa.me/${profile.whatsapp?.replace(/[^0-9]/g, '') || '967713551930'}`}
+                  href="https://www.instagram.com/code_emi?srtk=MXR5aHphOXByZ2J3ZQ=="
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:hover:bg-emerald-950/90 border border-emerald-300 dark:border-emerald-800/80 text-emerald-800 dark:text-emerald-300 font-mono text-xs transition-colors shadow-xs"
-                  title="WhatsApp"
+                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-fuchsia-50 hover:bg-fuchsia-100 dark:bg-fuchsia-950/60 dark:hover:bg-fuchsia-950/90 border border-fuchsia-300 dark:border-fuchsia-800/80 text-fuchsia-800 dark:text-fuchsia-300 transition-colors shadow-xs"
+                  title="Instagram"
+                  aria-label="Instagram @code_emi"
                 >
-                  <Phone className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                  <span>+{profile.whatsapp}</span>
-                </a>
-                <a
-                  href={`mailto:${profile.email}`}
-                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white hover:bg-slate-100 dark:bg-slate-900/90 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors shadow-xs"
-                  title="Email"
-                >
-                  <Mail className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
-                  <span>{profile.email}</span>
+                  <Instagram className="w-3.5 h-3.5" />
+                  <span>@code_emi</span>
                 </a>
               </div>
             )}
@@ -246,13 +249,13 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 
           <div className="p-4 rounded-xl bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/60 text-start shadow-xs">
             <div className="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-950/80 flex items-center justify-center text-purple-600 dark:text-purple-400 mb-2.5">
-              <Phone className="w-4 h-4" />
+              <Instagram className="w-4 h-4" />
             </div>
             <div className="text-sm font-bold text-slate-900 dark:text-white">
               {isAr ? 'تواصل ومتابعة مباشرة' : 'Direct Communication'}
             </div>
             <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              WhatsApp · Email 24h
+              Instagram · Email 24h
             </div>
           </div>
         </div>
