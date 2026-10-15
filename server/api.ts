@@ -362,7 +362,8 @@ api.post('/admin/login', loginLimiter, async (req: Request, res: Response) => {
     }
 
     const isMatch = bcrypt.compareSync(password, admin.passwordHash);
-    if (!isMatch) {
+    // Only the project owner (superadmin) may sign in to the admin portal.
+    if (!isMatch || admin.role !== 'superadmin') {
       void notifySystemFailure('admin-login-failed', 'تم رفض محاولة تسجيل دخول إلى لوحة الإدارة.').catch(() => undefined);
       return res.status(401).json({ error: 'بيانات الدخول غير صحيحة' });
     }
