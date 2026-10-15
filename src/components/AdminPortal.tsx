@@ -46,9 +46,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   const isAr = lang === 'ar';
 
   // Auth State
-  const [token, setToken] = useState<boolean>(() => {
-    return Boolean(typeof window !== 'undefined' && sessionStorage.getItem('emicode_admin_token'));
-  });
+  const [token, setToken] = useState<boolean>(false);
   const [adminUser, setAdminUser] = useState<{ id: string; email: string; role: string } | null>(null);
   const [emailInput, setEmailInput] = useState('');
   const [passwordInput, setPasswordInput] = useState('');
