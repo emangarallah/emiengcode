@@ -359,6 +359,7 @@ api.post('/admin/login', loginLimiter, async (req: Request, res: Response) => {
 
     res.json({
       success: true,
+      token,
       admin: {
         id: admin.id,
         email: admin.email,

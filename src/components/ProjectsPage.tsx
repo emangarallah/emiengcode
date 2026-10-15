@@ -8,12 +8,14 @@ interface ProjectsPageProps {
   projects: Project[];
   lang: Language;
   onSelectProject: (p: Project) => void;
+  onRequestSimilar?: (projectName: string, serviceTitle?: string | null) => void;
 }
 
 export const ProjectsPage: React.FC<ProjectsPageProps> = ({
   projects,
   lang,
   onSelectProject,
+  onRequestSimilar,
 }) => {
   const t = translations[lang];
   const isAr = lang === 'ar';
@@ -172,6 +174,7 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({
                 project={project}
                 lang={lang}
                 onSelectProject={onSelectProject}
+                onRequestSimilar={onRequestSimilar}
               />
             ))}
           </div>

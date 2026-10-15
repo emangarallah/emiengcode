@@ -45,8 +45,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   const isAr = lang === 'ar';
 
   // Auth State
-  // Check the server-side HttpOnly session cookie; never trust a browser-stored bearer token.
-  const [token, setToken] = useState<boolean>(true);
+  const [token, setToken] = useState<boolean>(() => {
+    return Boolean(typeof window !== 'undefined' && sessionStorage.getItem('emicode_admin_token'));
+  });
   const [adminUser, setAdminUser] = useState<{ id: string; email: string; role: string } | null>(null);
   const [emailInput, setEmailInput] = useState('');
   const [passwordInput, setPasswordInput] = useState('');
@@ -82,25 +83,29 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     setTimeout(() => setNotification(null), 4000);
   };
 
-  // Admin API authentication uses the HttpOnly session cookie exclusively.
+  // Admin API authentication supports both HttpOnly cookies and verified Bearer sessions
   const authFetch = async (url: string, options: RequestInit = {}) => {
     const headers = new Headers(options.headers || {});
     headers.set('Content-Type', 'application/json');
+    const storedToken = sessionStorage.getItem('emicode_admin_token');
+    if (storedToken) {
+      headers.set('Authorization', `Bearer ${storedToken}`);
+    }
     return fetch(url, { ...options, credentials: 'include', headers });
   };
 
   // Check auth & fetch data
   const checkAuthAndLoad = async () => {
-    if (!token) return;
     setIsLoading(true);
     try {
       const meRes = await authFetch('/api/admin/me');
       if (!meRes.ok) {
-        // Token invalid
-        handleLogout();
+        setToken(false);
+        setAdminUser(null);
         return;
       }
       const meData = await meRes.json();
+      setToken(true);
       setAdminUser(meData.admin);
 
       // Load Stats & Data
@@ -114,15 +119,16 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       ]);
     } catch (err) {
       console.error('Failed to load admin data:', err);
+      setToken(false);
+      setAdminUser(null);
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    localStorage.removeItem('emicode_token');
     checkAuthAndLoad();
-  }, [token]);
+  }, []);
 
   useEffect(() => {
     const handleAdminNavigation = (event: Event) => {
@@ -176,7 +182,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: emailInput, password: passwordInput })
+        body: JSON.stringify({ email: emailInput.trim(), password: passwordInput })
       });
 
       const contentType = (res.headers.get('content-type') || '').toLowerCase();
@@ -208,9 +214,22 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         throw new Error(data.error || (isAr ? 'فشل تسجيل الدخول.' : 'Login failed.'));
       }
 
+      if (data.token) {
+        sessionStorage.setItem('emicode_admin_token', data.token);
+      }
       setToken(true);
       setAdminUser(data.admin);
       showNotify(isAr ? 'تم تسجيل الدخول بنجاح!' : 'Logged in successfully!');
+
+      await Promise.all([
+        loadStats(),
+        loadDbStatus(),
+        loadProjects(),
+        loadServices(),
+        loadContacts(),
+        loadProfile()
+      ]);
+      onDataChanged();
     } catch (err: any) {
       setLoginError(err.message || 'بيانات الدخول غير صحيحة');
     } finally {
@@ -220,8 +239,12 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 
   const handleLogout = async () => {
     try {
-      await fetch('/api/admin/logout', { method: 'POST', credentials: 'include' });
+      const storedToken = sessionStorage.getItem('emicode_admin_token');
+      const headers = new Headers();
+      if (storedToken) headers.set('Authorization', `Bearer ${storedToken}`);
+      await fetch('/api/admin/logout', { method: 'POST', credentials: 'include', headers });
     } catch (_) {}
+    sessionStorage.removeItem('emicode_admin_token');
     localStorage.removeItem('emicode_token');
     setToken(false);
     setAdminUser(null);
@@ -882,9 +905,15 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                             </div>
                           </div>
 
-                          <div className="text-xs text-slate-400 flex flex-wrap gap-4 font-medium">
+                          <div className="text-xs text-slate-400 flex flex-wrap items-center gap-3 font-medium">
                             <span className="text-cyan-400">الخدمة: {req.serviceType}</span>
+                            {req.referenceProject && (
+                              <span className="text-amber-300 bg-amber-950/50 px-2 py-0.5 rounded border border-amber-800/60 font-semibold">
+                                {isAr ? 'المشروع المرجعي:' : 'Reference:'} {req.referenceProject}
+                              </span>
+                            )}
                             {req.budget && <span>الميزانية: {req.budget}</span>}
+                            {req.timeline && <span>المدة: {req.timeline}</span>}
                             <span>التاريخ: {new Date(req.createdAt).toLocaleString(isAr ? 'ar-EG' : 'en-US')}</span>
                           </div>
 
@@ -892,8 +921,17 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                             {req.message}
                           </p>
 
+                          {req.additionalFeatures && (
+                            <div className="text-xs text-slate-300 bg-slate-950/60 p-2.5 rounded-lg border border-slate-800/80 space-y-1">
+                              <span className="text-[11px] font-bold text-slate-400 block">
+                                {isAr ? 'الميزات والتفاصيل الإضافية:' : 'Additional Features:'}
+                              </span>
+                              <p className="whitespace-pre-wrap text-slate-200">{req.additionalFeatures}</p>
+                            </div>
+                          )}
+
                           {/* Quick response actions */}
-                          <div className="flex items-center gap-2 pt-1 text-xs">
+                          <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
                             <a
                               href={`mailto:${req.email}?subject=بخصوص طلبك لدى EMICODE`}
                               className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center gap-1.5"
@@ -901,6 +939,26 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                               <Mail className="w-3.5 h-3.5 text-cyan-400" />
                               <span>رد بالبريد</span>
                             </a>
+                            {req.phone && (
+                              <>
+                                <a
+                                  href={`tel:${req.phone}`}
+                                  className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center gap-1.5 font-mono"
+                                >
+                                  <Phone className="w-3.5 h-3.5 text-cyan-400" />
+                                  <span>اتصال ({req.phone})</span>
+                                </a>
+                                <a
+                                  href={`https://wa.me/${req.phone.replace(/[^0-9]/g, '')}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="px-3 py-1.5 rounded-lg bg-emerald-950/60 hover:bg-emerald-900 text-emerald-300 flex items-center gap-1.5 border border-emerald-800/80"
+                                >
+                                  <Phone className="w-3.5 h-3.5 text-emerald-400" />
+                                  <span>مراسلة واتساب</span>
+                                </a>
+                              </>
+                            )}
                           </div>
                         </div>
                       ))

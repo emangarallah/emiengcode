@@ -28,6 +28,7 @@ export default function App() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [isAdminOpen, setIsAdminOpen] = useState<boolean>(false);
   const [contactServicePreload, setContactServicePreload] = useState<string>('');
+  const [contactReferenceProject, setContactReferenceProject] = useState<string>('');
   const [contactPrefilledMessage, setContactPrefilledMessage] = useState<string>('');
 
   // Admin login check
@@ -70,16 +71,24 @@ export default function App() {
     }
   };
 
+  const checkAdminAuth = async (): Promise<boolean> => {
+    try {
+      const headers: Record<string, string> = {};
+      const stored = typeof window !== 'undefined' ? sessionStorage.getItem('emicode_admin_token') : null;
+      if (stored) headers['Authorization'] = `Bearer ${stored}`;
+      const res = await fetch('/api/admin/me', { credentials: 'include', headers });
+      return res.ok;
+    } catch {
+      return false;
+    }
+  };
+
   useEffect(() => {
     loadData();
     let active = true;
-    fetch('/api/admin/me', { credentials: 'include' })
-      .then((response) => {
-        if (active) setIsAdminLoggedIn(response.ok);
-      })
-      .catch(() => {
-        if (active) setIsAdminLoggedIn(false);
-      });
+    checkAdminAuth().then((ok) => {
+      if (active) setIsAdminLoggedIn(ok);
+    });
     return () => { active = false; };
   }, []);
 
@@ -121,9 +130,7 @@ export default function App() {
 
   const handleCloseAdmin = () => {
     setIsAdminOpen(false);
-    fetch('/api/admin/me', { credentials: 'include' })
-      .then((response) => setIsAdminLoggedIn(response.ok))
-      .catch(() => setIsAdminLoggedIn(false));
+    checkAdminAuth().then((ok) => setIsAdminLoggedIn(ok));
     if (window.location.hash === '#admin' || window.location.hash === '#dashboard') {
       history.pushState('', document.title, window.location.pathname + window.location.search);
     }
@@ -139,6 +146,7 @@ export default function App() {
 
   const handleSelectServiceToOrder = (serviceTitle: string) => {
     setContactServicePreload(serviceTitle);
+    setContactReferenceProject('');
     setContactPrefilledMessage(
       lang === 'ar'
         ? `أود الاستفسار وطلب خدمة: "${serviceTitle}".`
@@ -147,11 +155,15 @@ export default function App() {
     handleScrollToSection('contact');
   };
 
-  const handleRequestSimilarProject = (projectName: string) => {
+  const handleRequestSimilarProject = (projectName: string, serviceTitle?: string | null) => {
+    if (serviceTitle) {
+      setContactServicePreload(serviceTitle);
+    }
+    setContactReferenceProject(projectName);
     setContactPrefilledMessage(
       lang === 'ar'
-        ? `مرحبًا، أعجبني مشروع "${projectName}" وأود الاستفسار عن بناء نظام مشابه بمواصفات خاصة.`
-        : `Hello, I reviewed the project "${projectName}" and would like to build a similar system.`
+        ? `مرحبًا، أعجبني نموذج المشروع "${projectName}" وأود الاستفسار عن بناء نظام متكامل مشابه له بمواصفات مخصصة لنشاطي.`
+        : `Hello, I reviewed the prototype project "${projectName}" and would like to build a similar custom system.`
     );
     handleScrollToSection('contact');
   };
@@ -188,6 +200,7 @@ export default function App() {
           projects={projects}
           lang={lang}
           onSelectProject={handleSelectProject}
+          onRequestSimilar={handleRequestSimilarProject}
           onViewAllProjects={() => handleScrollToSection('projects')}
         />
 
@@ -196,6 +209,7 @@ export default function App() {
           projects={projects}
           lang={lang}
           onSelectProject={handleSelectProject}
+          onRequestSimilar={handleRequestSimilarProject}
         />
 
         {/* Development Services (7 core services) */}
@@ -214,6 +228,7 @@ export default function App() {
           profile={profile}
           services={services}
           selectedServicePreload={contactServicePreload}
+          referenceProjectPreload={contactReferenceProject}
           prefilledMessage={contactPrefilledMessage}
         />
 
@@ -255,9 +270,7 @@ export default function App() {
           onClose={handleCloseAdmin}
           onDataChanged={() => {
             loadData();
-            fetch('/api/admin/me', { credentials: 'include' })
-              .then((response) => setIsAdminLoggedIn(response.ok))
-              .catch(() => setIsAdminLoggedIn(false));
+            checkAdminAuth().then((ok) => setIsAdminLoggedIn(ok));
           }}
         />
       )}

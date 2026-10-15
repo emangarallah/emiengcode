@@ -42,10 +42,11 @@ export function signAdminToken(admin: { id: string; email: string; role: string 
 
 // Set HttpOnly session cookie
 export function setAuthCookie(res: Response, token: string) {
+  const isProd = process.env.NODE_ENV === 'production';
   res.cookie(COOKIE_NAME, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    secure: isProd,
+    sameSite: isProd ? 'none' : 'lax',
     path: '/',
     maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
   });
@@ -53,10 +54,11 @@ export function setAuthCookie(res: Response, token: string) {
 
 // Clear session cookie
 export function clearAuthCookie(res: Response) {
+  const isProd = process.env.NODE_ENV === 'production';
   res.clearCookie(COOKIE_NAME, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    secure: isProd,
+    sameSite: isProd ? 'none' : 'lax',
     path: '/'
   });
 }
@@ -71,8 +73,12 @@ export async function requireAdmin(req: Request, res: Response, next: NextFuncti
       return res.status(503).json({ error: 'لوحة الإدارة متوقفة مؤقتًا حتى يتوفر اتصال Neon PostgreSQL.' });
     }
 
-    // Admin sessions are cookie-only; never trust client-stored Bearer tokens.
-    const token = req.cookies?.[COOKIE_NAME];
+    // Extract token from either HttpOnly cookie or Authorization Bearer header
+    let token = req.cookies?.[COOKIE_NAME];
+    if (!token && typeof req.headers.authorization === 'string') {
+      const match = req.headers.authorization.match(/^Bearer\s+(.+)$/i);
+      if (match) token = match[1];
+    }
 
     if (!token) {
       return res.status(401).json({ error: 'Unauthorized: Admin authentication required' });
@@ -81,7 +87,7 @@ export async function requireAdmin(req: Request, res: Response, next: NextFuncti
     const decoded = jwt.verify(token, requireJwtSecret()) as AdminPayload;
     const admin = await db.findAdminById(decoded.adminId);
 
-    if (!admin) {
+    if (!admin || !['admin', 'superadmin'].includes(admin.role)) {
       return res.status(401).json({ error: 'Unauthorized: Session is invalid or revoked' });
     }
 
@@ -92,7 +98,7 @@ export async function requireAdmin(req: Request, res: Response, next: NextFuncti
     };
 
     next();
-  } catch (err) {
+  } catch (_err) {
     return res.status(401).json({ error: 'Unauthorized: Invalid or expired token' });
   }
 }

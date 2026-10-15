@@ -8,6 +8,7 @@ interface FeaturedProjectsProps {
   projects: Project[];
   lang: Language;
   onSelectProject: (p: Project) => void;
+  onRequestSimilar?: (projectName: string, serviceTitle?: string | null) => void;
   onViewAllProjects: () => void;
 }
 
@@ -15,6 +16,7 @@ export const FeaturedProjects: React.FC<FeaturedProjectsProps> = ({
   projects,
   lang,
   onSelectProject,
+  onRequestSimilar,
   onViewAllProjects,
 }) => {
   const t = translations[lang];
@@ -64,6 +66,7 @@ export const FeaturedProjects: React.FC<FeaturedProjectsProps> = ({
               project={project}
               lang={lang}
               onSelectProject={onSelectProject}
+              onRequestSimilar={onRequestSimilar}
             />
           ))}
         </div>

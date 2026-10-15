@@ -9,7 +9,8 @@ import {
   Clock, 
   Sparkles,
   ArrowRight,
-  ArrowLeft
+  ArrowLeft,
+  X
 } from 'lucide-react';
 import { Language, translations } from '../i18n.ts';
 import { Profile, Service } from '../types.ts';
@@ -19,6 +20,7 @@ interface ContactSectionProps {
   profile: Profile | null;
   services: Service[];
   selectedServicePreload?: string;
+  referenceProjectPreload?: string;
   prefilledMessage?: string;
 }
 
@@ -27,6 +29,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
   profile,
   services,
   selectedServicePreload,
+  referenceProjectPreload,
   prefilledMessage,
 }) => {
   const t = translations[lang];
@@ -35,8 +38,12 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [serviceType, setServiceType] = useState(selectedServicePreload || '');
   const [budget, setBudget] = useState('');
+  const [timeline, setTimeline] = useState('');
+  const [additionalFeatures, setAdditionalFeatures] = useState('');
+  const [referenceProject, setReferenceProject] = useState(referenceProjectPreload || '');
   const [message, setMessage] = useState(prefilledMessage || '');
   
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -49,6 +56,12 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
       setServiceType(selectedServicePreload);
     }
   }, [selectedServicePreload]);
+
+  React.useEffect(() => {
+    if (referenceProjectPreload !== undefined) {
+      setReferenceProject(referenceProjectPreload);
+    }
+  }, [referenceProjectPreload]);
 
   React.useEffect(() => {
     if (prefilledMessage) {
@@ -74,9 +87,13 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
         body: JSON.stringify({
           name,
           email,
+          phone: phone.trim() || null,
           serviceId: selectedService.id,
           serviceType: selectedService.title,
-          budget: budget || null,
+          budget: budget.trim() || null,
+          timeline: timeline.trim() || null,
+          additionalFeatures: additionalFeatures.trim() || null,
+          referenceProject: referenceProject.trim() || null,
           message
         })
       });
@@ -112,7 +129,11 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
       setSuccess(true);
       setName('');
       setEmail('');
+      setPhone('');
       setBudget('');
+      setTimeline('');
+      setAdditionalFeatures('');
+      setReferenceProject('');
       setMessage('');
     } catch (err: any) {
       setErrorMessage(err.message || 'حدث خطأ في الاتصال بالخادم');
@@ -246,6 +267,24 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                 </div>
               )}
 
+              {/* Reference Project Banner if user clicked "أريد مشروعاً مشابهاً" */}
+              {referenceProject && (
+                <div className="p-3 rounded-xl bg-cyan-50 dark:bg-cyan-950/60 border border-cyan-200 dark:border-cyan-800/80 flex items-center justify-between text-xs text-cyan-800 dark:text-cyan-200 animate-in fade-in">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-cyan-600 dark:text-cyan-400 shrink-0" />
+                    <span>{t.contact.form.referenceProject}: <strong className="font-bold text-cyan-900 dark:text-cyan-100">{referenceProject}</strong></span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setReferenceProject('')}
+                    className="p-1 rounded-md text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-cyan-100 dark:hover:bg-cyan-900 transition-colors"
+                    title={isAr ? 'إلغاء الربط بالمشروع المرجعي' : 'Clear reference project'}
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
+
               {/* Grid Inputs: Name & Email */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
@@ -277,8 +316,21 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                 </div>
               </div>
 
-              {/* Service & Budget */}
+              {/* Phone & Service */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    {t.contact.form.phone}
+                  </label>
+                  <input
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder={t.contact.form.phonePlaceholder}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none font-mono"
+                  />
+                </div>
+
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                     {t.contact.form.service} <span className="text-rose-500">*</span>
@@ -297,7 +349,10 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                     ))}
                   </select>
                 </div>
+              </div>
 
+              {/* Budget & Expected Timeline */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                     {t.contact.form.budget}
@@ -310,9 +365,22 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                     className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none"
                   />
                 </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    {t.contact.form.timeline}
+                  </label>
+                  <input
+                    type="text"
+                    value={timeline}
+                    onChange={(e) => setTimeline(e.target.value)}
+                    placeholder={t.contact.form.timelinePlaceholder}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none"
+                  />
+                </div>
               </div>
 
-              {/* Message */}
+              {/* Project Description (Required) */}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                   {t.contact.form.message} <span className="text-rose-500">*</span>
@@ -323,6 +391,20 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder={t.contact.form.messagePlaceholder}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none resize-y"
+                />
+              </div>
+
+              {/* Additional Features (Optional) */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  {t.contact.form.additionalFeatures}
+                </label>
+                <textarea
+                  rows={2}
+                  value={additionalFeatures}
+                  onChange={(e) => setAdditionalFeatures(e.target.value)}
+                  placeholder={t.contact.form.additionalFeaturesPlaceholder}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none resize-y"
                 />
               </div>

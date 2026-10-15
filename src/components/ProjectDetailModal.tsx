@@ -17,7 +17,7 @@ interface ProjectDetailModalProps {
   project: Project | null;
   lang: Language;
   onClose: () => void;
-  onRequestSimilar: (projectName: string) => void;
+  onRequestSimilar: (projectName: string, serviceTitle?: string | null) => void;
 }
 
 export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
@@ -47,8 +47,16 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
         
         {/* Header Bar */}
         <div className="px-6 py-4 bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-xs font-medium">
+          <div className="flex flex-wrap items-center gap-2 text-xs font-medium">
             <span className="text-cyan-600 dark:text-cyan-400 uppercase font-bold">{project.category}</span>
+            {project.serviceTitle && (
+              <>
+                <span>·</span>
+                <span className="text-slate-700 dark:text-slate-300 font-semibold bg-slate-200/70 dark:bg-slate-800 px-2 py-0.5 rounded text-[11px]">
+                  {project.serviceTitle}
+                </span>
+              </>
+            )}
             <span>·</span>
             {isTemplate ? (
               <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30">
@@ -220,7 +228,7 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
             <button
               onClick={() => {
                 onClose();
-                onRequestSimilar(project.title);
+                onRequestSimilar(project.title, project.serviceTitle);
               }}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-cyan-50 dark:bg-slate-800/90 hover:bg-cyan-100 dark:hover:bg-slate-800 text-cyan-700 dark:text-cyan-300 text-xs font-bold border border-cyan-300 dark:border-cyan-500/30 cursor-pointer shadow-xs"
             >
