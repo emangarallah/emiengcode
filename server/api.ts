@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { db } from './db.ts';
 import { store } from './store.ts';
-import { bcrypt, clearAuthCookie, createRateLimiter, requireAdmin, setAuthCookie, signAdminToken } from './auth.ts';
+import { clearAuthCookie, createRateLimiter, getConfiguredOwnerEmail, hasConfiguredOwnerCredentials, isConfiguredOwnerEmail, requireAdmin, setAuthCookie, signAdminToken, verifyConfiguredOwnerPassword } from './auth.ts';
 import {
   createContactRequestWithNotifications,
   getClientRequestDetails,
@@ -339,9 +339,22 @@ api.post('/admin/login', loginLimiter, async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'يرجى إدخال بريد إلكتروني وكلمة مرور صحيحة' });
     }
 
+    if (!hasConfiguredOwnerCredentials()) {
+      return res.status(503).json({ error: 'بيانات دخول مالك المشروع غير مكتملة. تحقق من ADMIN_EMAIL وADMIN_PASSWORD في متغيرات بيئة Vercel.' });
+    }
     if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
       return res.status(503).json({ error: 'إعدادات المصادقة غير مكتملة على الخادم.' });
     }
+
+    const email = parsed.data.email.trim().toLowerCase();
+    const { password } = parsed.data;
+
+    // Vercel environment credentials are the source of truth: one email and password only.
+    if (!isConfiguredOwnerEmail(email) || !verifyConfiguredOwnerPassword(password)) {
+      void notifySystemFailure('admin-login-failed', 'تم رفض محاولة تسجيل دخول إلى لوحة الإدارة.').catch(() => undefined);
+      return res.status(401).json({ error: 'بيانات الدخول غير صحيحة' });
+    }
+
     if (!(await db.waitUntilInitialized())) {
       const configured = Boolean(process.env.DATABASE_URL?.trim());
       return res.status(503).json({
@@ -351,9 +364,11 @@ api.post('/admin/login', loginLimiter, async (req: Request, res: Response) => {
       });
     }
 
-    const email = parsed.data.email.trim().toLowerCase();
-    const { password } = parsed.data;
-    const admin = await db.findAdminByEmail(email);
+    const ownerEmail = getConfiguredOwnerEmail();
+    if (!ownerEmail) {
+      return res.status(503).json({ error: 'تعذر قراءة بريد مالك المشروع من إعدادات الخادم.' });
+    }
+    const admin = await db.findAdminByEmail(ownerEmail);
 
     if (!admin) {
       void notifySystemFailure('admin-login-failed', 'تم رفض محاولة تسجيل دخول إلى لوحة الإدارة.').catch(() => undefined);
@@ -361,9 +376,11 @@ api.post('/admin/login', loginLimiter, async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'بيانات الدخول غير صحيحة' });
     }
 
-    const isMatch = bcrypt.compareSync(password, admin.passwordHash);
-    // Only the project owner (superadmin) may sign in to the admin portal.
-    if (!isMatch || admin.role !== 'superadmin') {
+    // Only the configured owner account may sign in to the admin portal.
+    if (
+      admin.role !== 'superadmin' ||
+      admin.email.trim().toLowerCase() !== ownerEmail
+    ) {
       void notifySystemFailure('admin-login-failed', 'تم رفض محاولة تسجيل دخول إلى لوحة الإدارة.').catch(() => undefined);
       return res.status(401).json({ error: 'بيانات الدخول غير صحيحة' });
     }
@@ -419,43 +436,16 @@ const changePasswordSchema = z.object({
   newPassword: z.string().min(8, 'كلمة المرور الجديدة يجب ألا تقل عن 8 أحرف')
 });
 
-api.post('/admin/change-password', requireAdmin, async (req: Request, res: Response) => {
-  try {
-    const parsed = changePasswordSchema.safeParse(req.body);
-    if (!parsed.success) {
-      return res.status(400).json({ error: parsed.error.issues[0]?.message || 'بيانات غير صالحة' });
-    }
-
-    const { currentPassword, newPassword } = parsed.data;
-    const admin = await db.findAdminById(req.admin!.adminId);
-    if (!admin) {
-      return res.status(404).json({ error: 'حساب المدير غير موجود' });
-    }
-
-    const isMatch = bcrypt.compareSync(currentPassword, admin.passwordHash);
-    if (!isMatch) {
-      return res.status(400).json({ error: 'كلمة المرور الحالية غير صحيحة' });
-    }
-
-    const newHash = bcrypt.hashSync(newPassword, 10);
-    const success = await db.updateAdminPassword(admin.id, newHash);
-    if (!success) {
-      return res.status(500).json({ error: 'تعذر تحديث كلمة المرور في قاعدة البيانات' });
-    }
-    notifyAdminActivitySafely(req, {
-      title: 'تغيير كلمة مرور إدارية',
-      message: 'تم تغيير كلمة مرور حساب إداري. إذا لم يكن ذلك متوقعًا، راجع سجل الإدارة.',
-      type: 'security',
-      entityType: 'admin',
-      entityId: admin.id,
-      targetUrl: '/admin#db'
-    });
-
-    res.json({ success: true, message: 'تم تحديث كلمة المرور بنجاح في قاعدة البيانات' });
-  } catch (err: any) {
-    void notifySystemFailure('admin-password-change-failure', 'فشلت عملية تغيير كلمة مرور إدارية. يرجى مراجعة سجلات الخادم.').catch(() => undefined);
-    res.status(500).json({ error: 'خطأ أثناء تغيير كلمة المرور', details: err.message });
+api.post('/admin/change-password', requireAdmin, (req: Request, res: Response) => {
+  const parsed = changePasswordSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: parsed.error.issues[0]?.message || 'بيانات غير صالحة' });
   }
+
+  // Login credentials are managed in Vercel Environment Variables, not in the database.
+  return res.status(409).json({
+    error: 'كلمة مرور المالك تُدار عبر ADMIN_PASSWORD في إعدادات Vercel. غيّر قيمة المتغير ثم أعد النشر.'
+  });
 });
 
 // Validate & Process Project Image Upload
