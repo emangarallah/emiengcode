@@ -53,7 +53,10 @@ export interface AdminPayload {
   adminId: string;
   email: string;
   role: string;
+  sessionVersion?: string;
 }
+
+const OWNER_SESSION_VERSION = 'owner-login-v3';
 
 declare global {
   namespace Express {
@@ -69,10 +72,11 @@ export function signAdminToken(admin: { id: string; email: string; role: string 
     {
       adminId: admin.id,
       email: admin.email,
-      role: admin.role
+      role: admin.role,
+      sessionVersion: OWNER_SESSION_VERSION
     },
     requireJwtSecret(),
-    { expiresIn: '7d' }
+    { expiresIn: '15m' }
   );
 }
 
@@ -83,8 +87,8 @@ export function setAuthCookie(res: Response, token: string) {
     httpOnly: true,
     secure: isProd,
     sameSite: 'lax',
-    path: '/',
-    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    path: '/'
+    // Session cookie: it is removed when the browser session ends.
   });
 }
 
@@ -129,6 +133,7 @@ export async function requireAdmin(req: Request, res: Response, next: NextFuncti
     // Only the single owner account configured in Vercel may access administration APIs.
     const ownerEmail = getConfiguredOwnerEmail();
     if (
+      decoded.sessionVersion !== OWNER_SESSION_VERSION ||
       !admin ||
       admin.role !== 'superadmin' ||
       !ownerEmail ||
