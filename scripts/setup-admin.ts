@@ -17,8 +17,8 @@ async function setupAdmin() {
     console.error('Error: Set ADMIN_EMAIL and ADMIN_PASSWORD explicitly in a private environment before running this script.');
     process.exit(1);
   }
-  if (password.length < 8) {
-    console.error('Error: ADMIN_PASSWORD must contain at least 8 characters.');
+  if (password.length < 12) {
+    console.error('Error: ADMIN_PASSWORD must contain at least 12 characters.');
     process.exit(1);
   }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
