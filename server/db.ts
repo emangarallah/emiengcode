@@ -488,6 +488,7 @@ class DatabaseManager {
         if (process.env.NODE_ENV === 'production') throw err;
       }
     }
+    if (process.env.NODE_ENV === 'production') throw new Error('Primary database unavailable; production writes are disabled.');
     return store.createProject(project);
   }
 
@@ -544,6 +545,7 @@ class DatabaseManager {
         if (process.env.NODE_ENV === 'production') throw err;
       }
     }
+    if (process.env.NODE_ENV === 'production') throw new Error('Primary database unavailable; production writes are disabled.');
     return store.updateProject(id, updates);
   }
 
@@ -557,6 +559,7 @@ class DatabaseManager {
         if (process.env.NODE_ENV === 'production') throw err;
       }
     }
+    if (process.env.NODE_ENV === 'production') throw new Error('Primary database unavailable; production writes are disabled.');
     return store.deleteProject(id);
   }
 
@@ -591,6 +594,7 @@ class DatabaseManager {
         if (process.env.NODE_ENV === 'production') throw err;
       }
     }
+    if (process.env.NODE_ENV === 'production') throw new Error('Primary database unavailable; production writes are disabled.');
     return store.createService(service);
   }
 
@@ -613,6 +617,7 @@ class DatabaseManager {
         if (process.env.NODE_ENV === 'production') throw err;
       }
     }
+    if (process.env.NODE_ENV === 'production') throw new Error('Primary database unavailable; production writes are disabled.');
     return store.updateService(id, updates);
   }
 
@@ -626,6 +631,7 @@ class DatabaseManager {
         if (process.env.NODE_ENV === 'production') throw err;
       }
     }
+    if (process.env.NODE_ENV === 'production') throw new Error('Primary database unavailable; production writes are disabled.');
     return store.deleteService(id);
   }
 
@@ -676,6 +682,7 @@ class DatabaseManager {
         if (process.env.NODE_ENV === 'production') throw err;
       }
     }
+    if (process.env.NODE_ENV === 'production') throw new Error('Primary database unavailable; production writes are disabled.');
     return store.createContactRequest(req);
   }
 
@@ -692,6 +699,7 @@ class DatabaseManager {
         if (process.env.NODE_ENV === 'production') throw err;
       }
     }
+    if (process.env.NODE_ENV === 'production') throw new Error('Primary database unavailable; production writes are disabled.');
     return store.updateContactStatus(id, status);
   }
 
@@ -705,6 +713,7 @@ class DatabaseManager {
         if (process.env.NODE_ENV === 'production') throw err;
       }
     }
+    if (process.env.NODE_ENV === 'production') throw new Error('Primary database unavailable; production writes are disabled.');
     return store.deleteContactRequest(id);
   }
 
@@ -773,6 +782,7 @@ class DatabaseManager {
         if (process.env.NODE_ENV === 'production') throw err;
       }
     }
+    if (process.env.NODE_ENV === 'production') throw new Error('Primary database unavailable; production writes are disabled.');
     return store.updateProfile(updates);
   }
 
@@ -834,6 +844,7 @@ class DatabaseManager {
         if (process.env.NODE_ENV === 'production') throw err;
       }
     }
+    if (process.env.NODE_ENV === 'production') throw new Error('Primary database unavailable; production writes are disabled.');
     return store.updateAdminPassword(adminId, newPasswordHash);
   }
 }
