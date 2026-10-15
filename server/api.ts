@@ -338,7 +338,12 @@ api.post('/admin/login', loginLimiter, async (req: Request, res: Response) => {
       return res.status(503).json({ error: 'إعدادات المصادقة غير مكتملة على الخادم.' });
     }
     if (!(await db.waitUntilInitialized())) {
-      return res.status(503).json({ error: 'لوحة الإدارة غير متاحة حتى يتم الاتصال بقاعدة Neon.' });
+      const configured = Boolean(process.env.DATABASE_URL?.trim());
+      return res.status(503).json({
+        error: !configured
+          ? 'إعداد قاعدة البيانات مفقود: أضف DATABASE_URL إلى Environment Variables في Vercel.'
+          : 'تعذر الاتصال بقاعدة Neon أو تهيئة الجداول. تحقق من صلاحية رابط DATABASE_URL وسجلات Runtime في Vercel.'
+      });
     }
 
     const email = parsed.data.email.trim().toLowerCase();
