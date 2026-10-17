@@ -248,6 +248,13 @@ class DatabaseManager {
         "DELETE FROM projects WHERE slug IN ('emiflow-saas-erp', 'medilink-telehealth', 'albayan-flutter-app', 'finpulse-crypto-analytics', 'hypergate-api-gateway', 'dartech-estate-crm')"
       );
 
+      // Keep the published hall's display name consistent in the ready-projects catalogue.
+      // This idempotent migration updates existing Neon data as well as future seeded records.
+      await client.query(
+        'UPDATE projects SET title = $1 WHERE slug = $2 AND title <> $1',
+        ['قاعة ذو ريدان', 'vercel-hallduridaann']
+      );
+
       // Retire only Vercel catalogue entries whose projects no longer exist in this team.
       // emicode-nu.vercel.app is retained: Vercel confirms it is an alias of the existing
       // "emicode" project, not a separate removed project.
