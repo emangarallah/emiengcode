@@ -448,7 +448,7 @@ export const VERCEL_SHOWCASE_PROJECTS: Project[] = [
     sortOrder: 106
   }),
   makeCatalogProject(vercelProjectId(7), {
-    title: 'قاعة دُرّة دان — مناسبات وحجوزات',
+    title: 'قاعة ذو ريدان',
     slug: 'vercel-hallduridaann',
     shortDescription: 'موقع تعريفي لقاعة مناسبات مع تجربة طلب الحجز.',
     description: 'مشروع قاعة مناسبات منشور على Vercel؛ صُنّف ضمن أنظمة الحجز والخدمات.',
